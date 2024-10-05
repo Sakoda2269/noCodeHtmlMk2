@@ -4,6 +4,7 @@ import { useContext, useEffect, useReducer, useRef, useState } from "react"
 
 import EventContext from "@/contexts/event/eventContext"
 import Arrow from "./arrow"
+import EventMouseOverContext from "@/contexts/event/eventMouseOverContext"
 
 
 export default function EventList({ params }) {
@@ -24,9 +25,14 @@ function EventBase({ children, id, action, color }) {
 
     const { selecting, setSelecting } = useContext(EventSelectingContext);
     const {event, updateEvent} = useContext(EventContext);
+    const {mouseOver, setMouseOver} = useContext(EventMouseOverContext);
 
     const [mousePos, setMousePos] = useState({x: 0, y: 0});
     const [arrowEndPos, setArrowEndPos] = useState({x: 0, y: 0});
+
+    useEffect(() => {
+        replaceArrow(event);
+    }, [event])
 
     const select = (e) => {
         e.stopPropagation();
@@ -50,24 +56,91 @@ function EventBase({ children, id, action, color }) {
         setMousePos({x: e.pageX, y: e.pageY});
     }
 
-    const arrowEnd = (e) => {
+    const arrowDragging = (e) => {
         let dx = e.pageX - mousePos.x;
         let dy = e.pageY - mousePos.y;
         setArrowEndPos({x: dx, y: dy});
     }
 
+    const replaceArrow = (event) => {
+        if(event.actions[id].children != ""){
+            let ix = event.actions[id].bounds.x;
+            let iy = event.actions[id].bounds.y;
+            let iw = event.actions[id].bounds.w;
+            const child = event.actions[id].children;
+            let cx = event.actions[child].bounds.x;
+            let cy = event.actions[child].bounds.y;
+            let cw = event.actions[child].bounds.w;
+            let ch = event.actions[child].bounds.h;
+            setArrowEndPos({
+                x: (cx + cw / 2) - (ix + iw / 2),
+                y: (cy - iy - ch)
+            })
+        }else{
+            setArrowEndPos({x: 0, y: 0})
+        }
+        
+    }
+
+    const arrowEnd = (e) => {
+        if(mouseOver != "" && mouseOver != id) {
+            const parent = id;
+            const child = mouseOver;
+            let newEvent = {...event};
+
+            newEvent.actions[parent].children = child;
+            let oldParent = newEvent.actions[child].parents;
+            if(oldParent != "" && oldParent != parent) {
+                newEvent.actions[oldParent].children = "";
+            }
+            newEvent.actions[child].parents = parent;
+
+
+            updateEvent(newEvent);
+            replaceArrow(newEvent);
+        }
+        else{
+            const parent = id;
+            const child = event.actions[parent].children;
+            let newEvent = {...event};
+            if(child != ""){
+                newEvent.actions[parent].children = "";
+                newEvent.actions[child].parents = "";
+            }
+            updateEvent(newEvent);
+            replaceArrow(newEvent);
+        }
+        
+    }
+
+    const onMouseEnter = (e) => {
+        e.preventDefault();
+        setMouseOver(id);
+    }
+
+    const onMouseLeave = (e) => {
+        setMouseOver("");
+    } 
+
+    const mouseOverStyle = {
+        true: {border: "solid 2px green"}
+    }
+
     return (
-        <div>
-            <div style={{position: "relative", left: (event.actions[id].bounds.w / 2) + "px", top: event.actions[id].bounds.h + "px"}}>
+        <div style={{border: "1px solid black"}}>
+            <div style={{position: "relative", left: (event.actions[id].bounds.w / 2) + "px", top: event.actions[id].bounds.h + "px", width: "0px", height: "0px"}}>
                 {selecting == id && (
-                    <div style={{zIndex: "9", width:"14px", height: "14px", borderRadius: "50%", backgroundColor: "blue", position: "absolute", left: "-7px", top: "-7px"}}
-                    onDragStart={arrowStart} onDragEnd={arrowEnd} draggable>
+                    <div style={{zIndex: "9", width:"14px", height: "14px", borderRadius: "50%", backgroundColor: "blue", position: "absolute", left: "-7px", top: "-7px"
+                    ,}}
+                    onDragStart={arrowStart} onDragEnd={arrowEnd} onDrag={arrowDragging} draggable>
                     </div>
                 )}
                 <Arrow start={{x: 0, y: 0}} end={{x: arrowEndPos.x, y: arrowEndPos.y}} />
             </div>
-            <div onClick={select} onDragStart={moveStart} onDragEnd={moveEnd} draggable
-                style={{ width: action.bounds.w + "px", height: action.bounds.h + "px", backgroundColor: color, zIndex: "5"}}>
+            <div onClick={select} onDragStart={moveStart} onDragEnd={moveEnd} onDragLeave={onMouseLeave} onDragOver={onMouseEnter}
+                 onMouseLeave={onMouseLeave} draggable
+                style={{ width: action.bounds.w + "px", height: action.bounds.h + "px", backgroundColor: color, zIndex: "5", ...mouseOverStyle[id==mouseOver]}}
+                >
                 {children}
             </div>
         </div>
