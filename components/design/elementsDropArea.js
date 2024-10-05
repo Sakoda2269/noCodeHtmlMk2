@@ -44,8 +44,8 @@ export default function ElementsDropArea({pid}) {
             let props = dragging.props;
             props.bounds.x = {type: "number", value: x};
             props.bounds.y = {type: "number", value: y};
-            props.bounds.w = {type: "number", value: 100};
-            props.bounds.h = {type: "number", value: 45};
+            props.bounds.w = {type: "number", value: props.bounds.w.value};
+            props.bounds.h = {type: "number", value: props.bounds.h.value};
             elements[id] = {
                 type: dragging.type,
                 props: props,
