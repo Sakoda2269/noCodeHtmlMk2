@@ -34,6 +34,11 @@ export default function ProjectHub() {
         })
     }
 
+    const cancel = (e) => {
+        setIsOpen(false);
+        setTitle("");
+    }
+
     return (
         <div>
             <div className="grid">
@@ -73,7 +78,7 @@ export default function ProjectHub() {
                 </div>
                 <p></p>
                 <div style={{display: "flex", justifyContent: "flex-end"}}>
-                    <button className="btn btn-secondary" onClick={() => {setIsOpen(false)}}>キャンセル</button>
+                    <button className="btn btn-secondary" onClick={cancel}>キャンセル</button>
                     {title!= "" ? (
                         <button className="btn btn-primary" style={{marginLeft: "10px"}} onClick={createProject}>決定</button>
                     ) : (
