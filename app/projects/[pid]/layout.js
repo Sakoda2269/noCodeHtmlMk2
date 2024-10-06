@@ -13,10 +13,16 @@ export default function ProjectLayout({children, params}) {
 
     const updateDesign = (newDesing) => {
         setDesign(newDesing);
-    }
+        let newProjects = projects;
+        newProjects[params.pid].design = newDesing;
+        updateProjects(newProjects);
+    } 
 
     const updateEvents = (newEvents) => {
         setEvents(newEvents);
+        let newProjects = projects;
+        newProjects[params.pid].events = newEvents;
+        updateProjects(newProjects)
     }
 
     return(

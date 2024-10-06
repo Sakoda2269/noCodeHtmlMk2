@@ -38,7 +38,7 @@ export default function EventDropArea() {
             let eBounds = dragging.bounds;
             eBounds.x = e.pageX - offsetX - bounds.x;
             eBounds.y = e.pageY - offsetY - bounds.y;
-            newEvent.actions[self.crypto.randomUUID()] = {
+            newEvent.actions[self.crypto.randomUUID().replace(/-/g, "")] = {
                 type: dragging.type,
                 bounds: eBounds,
                 parents: dragging.parent,

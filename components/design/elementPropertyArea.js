@@ -97,12 +97,12 @@ export default function ElementPropertyArea({pid}) {
                     <div>
                         <label className="form-label">style name</label>
                         <input className="form-control border-secondary" type="text" onChange={(e) => {setNewStyleName(e.target.value)}}/>
-                        {newStyleName=="" && <label classname="form-label" style={{color: "red"}}>1文字以上入力してください</label>}
+                        {newStyleName=="" && <label className="form-label" style={{color: "red"}}>1文字以上入力してください</label>}
                     </div>
                     <div>
                         <label className="form-label">value</label>
                         <input className="form-control border-secondary" type="text" onChange={(e) => {setNewStyleValue(e.target.value)}}/>
-                        {newStyleValue=="" && <label classname="form-label" style={{color: "red"}}>1文字以上入力してください</label>}
+                        {newStyleValue=="" && <label className="form-label" style={{color: "red"}}>1文字以上入力してください</label>}
                     </div>
                     <div style={{display: "flex", justifyContent: "flex-end", marginTop: "10px"}}>
                         <button className="btn btn-secondary" style={{marginRight: "10px"}} onClick={styleCancel}>cancel</button>

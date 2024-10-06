@@ -192,7 +192,7 @@ function ListElementBase({children, type, general, style, additionalProps, event
             general: general ? general : {},
             ...additionalProps
         }
-        let id = self.crypto.randomUUID();
+        let id = self.crypto.randomUUID().replace(/-/g, "");
         let mouseX = e.pageX - bounds.x;
         let mouseY = e.pageY - bounds.y;
         setDragging({
