@@ -6,6 +6,7 @@ import EventContext from "@/contexts/event/eventContext";
 import EventDraggingContext from "@/contexts/event/eventDraggingContext";
 import EventsContext from "@/contexts/event/eventsContext";
 import EventSelectingContext from "@/contexts/event/eventSelectingContext";
+import Link from "next/link";
 import { useContext, useState } from "react";
 
 
@@ -23,6 +24,14 @@ export default function Event({params}) {
 
     return (
         <div>
+            <div className="menu-bar">
+                <Link href={`/projects/${params.pid}/`}>
+                    <button>top</button>
+                </Link>
+                <Link href={`/projects/${params.pid}/design`}>
+                    <button>design</button>
+                </Link>
+            </div>
             <EventContext.Provider value={{event, updateEvent}}>
                 <EventDraggingContext.Provider value={{dragging, setDragging}}>
                     <EventSelectingContext.Provider value={{selecting, setSelecting}}>

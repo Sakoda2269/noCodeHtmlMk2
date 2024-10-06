@@ -132,8 +132,13 @@ function ActionBase({ children, id, action, color }) {
         true: {border: "solid 2px green"}
     }
 
+    const selectStyle = {
+        true: {border: "solid 3px black"},
+        false: {border: "solid 1px black"}
+    }
+
     return (
-        <div style={{border: "1px solid black"}}>
+        <div style={selectStyle[selecting == id]}>
             <div style={{position: "relative", left: (event.actions[id].bounds.w / 2) + "px", top: event.actions[id].bounds.h + "px", width: "0px", height: "0px"}}>
                 {selecting == id && (
                     <div style={{zIndex: "9", width:"14px", height: "14px", borderRadius: "50%", backgroundColor: "blue", position: "absolute", left: "-7px", top: "-7px"

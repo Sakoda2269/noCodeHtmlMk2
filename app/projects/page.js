@@ -27,8 +27,8 @@ export default function ProjectHub() {
                     elements: {}
                 },
                 events: {
-                    global_variables: [],
-                    event: {}
+                    globalVarialbes: [],
+                    event:{}
                 }
             }
         })
