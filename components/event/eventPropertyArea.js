@@ -164,7 +164,6 @@ function Property({aid, types, index, type, value, ioType}) {
         values += e.target.value;
         let newEvent = {...event};
         newEvent.actions[aid].selector[ioType][index].value = values;
-        console.log(values);
         updateEvent(newEvent);
     }
 

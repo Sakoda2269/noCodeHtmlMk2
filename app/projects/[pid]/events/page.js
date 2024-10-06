@@ -36,6 +36,14 @@ export default function Events({params}) {
 
     return (
         <div>
+            <div className="menu-bar">
+                <Link href={`/projects/${params.pid}/`}>
+                    <button>top</button>
+                </Link>
+                <Link href={`/projects/${params.pid}/design`}>
+                    <button>design</button>
+                </Link>
+            </div>
             <div className="grid">
                 <button className="btn btn-secondary" onClick={() => {setIsOpen(true)}}>
                     <p></p>

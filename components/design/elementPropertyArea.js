@@ -5,11 +5,13 @@ import ElementSelectingContext from "@/contexts/design/elementSelectingContext";
 import { useContext, useEffect, useState } from "react";
 import {Tab, Tabs} from "react-bootstrap";
 import Popup from "../popup";
+import EventsContext from "@/contexts/event/eventsContext";
 
 export default function ElementPropertyArea({pid}) {
 
     const {design, updateDesign} = useContext(DesignContext);
     const {selecting, setSelecting} = useContext(ElementSelectingContext);
+    const {events, updateEvents} = useContext(EventsContext)
 
     const [isOpen, setIsOpen] = useState(false);
     const [tabKey, setTabKey] = useState("general");
@@ -82,6 +84,9 @@ export default function ElementPropertyArea({pid}) {
                         </Tab>
                     ))}
                     <Tab eventKey="event" title="event">
+                        {Object.entries(design.elements[selecting].events).map(([key, value]) => (
+                            <EventEditForm selecting={selecting} eventName={key} prevEid={value} key={key}/>
+                        ))}
                     </Tab>
                 </Tabs>
             ) : (
@@ -151,4 +156,30 @@ function PropertyEditForm({selecting, propGroupName, propName, data}) {
     }
     
     return null;
+}
+
+function EventEditForm({selecting, eventName, prevEid}) {
+
+    const {events, updateEvents} = useContext(EventsContext);
+    const {design, updateDesign} = useContext(DesignContext);
+
+    const [selectEvent, setSelectEvent] = useState(prevEid);
+
+    const changeEvent = (e) => {
+        setSelectEvent(e.target.value);
+        let newDesign = {...design};
+        newDesign.elements[selecting].events[eventName] = e.target.value;
+    }
+
+    return (
+        <div style={{marginTop: "10px"}}>
+            <label className="form-label">{eventName}</label>
+            <select className="form-select" value={selectEvent} onChange={changeEvent}>
+                <option value="" disabled>Select...</option>
+                {Object.keys(events.event).map((eid) => (
+                    <option value={eid} key={eid}>{events.event[eid].title}</option>
+                ))}
+            </select>
+        </div>
+    )
 }
