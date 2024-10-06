@@ -11,17 +11,20 @@ export default function EventList({ params }) {
     return (
         <div style={{ display: "flex", "justifyContent": "center" }}>
             <div className="row" style={{ width: '80%', margin: '0 auto' }}>
-                <ListGetEvent />
+                <ListStartAction />
+                <p></p>
+                <ListGetAction />
             </div>
         </div>
     )
 }
 
-export const eventMap = {
-    "GET": GetEvent
+export const actionMap = {
+    "START": StartAction,
+    "GET": GetAction,
 }
 
-function EventBase({ children, id, action, color }) {
+function ActionBase({ children, id, action, color }) {
 
     const { selecting, setSelecting } = useContext(EventSelectingContext);
     const {event, updateEvent} = useContext(EventContext);
@@ -46,6 +49,9 @@ function EventBase({ children, id, action, color }) {
     const moveEnd = (e) => {
         let dx = e.pageX - mousePos.x;
         let dy = e.pageY - mousePos.y;
+        if(event.actions[id].bounds.x + dx < 0 || event.actions[id].bounds.y + dy < 0) {
+            return
+        }
         let newEvent = {...event};
         newEvent.actions[id].bounds.x += dx;
         newEvent.actions[id].bounds.y += dy;
@@ -147,7 +153,7 @@ function EventBase({ children, id, action, color }) {
     )
 }
 
-function ListEventBase({ children, type, color }) {
+function ListActionBase({ children, type, color, selector }) {
 
     const { dragging, setDragging } = useContext(EventDraggingContext);
 
@@ -176,7 +182,7 @@ function ListEventBase({ children, type, color }) {
             bounds: { x: 0, y: 0, w: bounds.w, h: bounds.h },
             parent: "",
             child: "",
-            selector: [],
+            selector: selector,
             lacalVariables: {},
             mouseX: mouseX,
             mouseY: mouseY
@@ -190,18 +196,48 @@ function ListEventBase({ children, type, color }) {
     )
 }
 
-function ListGetEvent() {
+function ListStartAction() {
+
+    const selector = {
+        inTypes: [],
+        outTypes: [],
+        in: [],
+        out: []
+    }
+
     return (
-        <ListEventBase type="GET" color="yellow">
-            <h4>GET</h4>
-        </ListEventBase>
+        <ListActionBase type="START" color="yellow" selector={selector}>
+            <h4>START</h4>
+        </ListActionBase>
     )
 }
 
-function GetEvent({ action, id }) {
+function StartAction({action, id}) {
+    return(
+        <ActionBase action={action} id={id} color="yellow">
+            <h4>START</h4>
+        </ActionBase>
+    )
+}
+
+function ListGetAction() {
+    const selector = {
+        inTypes: ["id", "variable", "constant"],
+        outTypes: ["id", "variable"],
+        in: [{type: "id", value: ""}],
+        out: [{type: "id", value: ""}]
+    }
     return (
-        <EventBase action={action} id={id} color="yellow">
+        <ListActionBase type="GET" color="yellow" selector={selector}>
             <h4>GET</h4>
-        </EventBase>
+        </ListActionBase>
+    )
+}
+
+function GetAction({ action, id }) {
+    return (
+        <ActionBase action={action} id={id} color="yellow">
+            <h4>GET</h4>
+        </ActionBase>
     )
 }
