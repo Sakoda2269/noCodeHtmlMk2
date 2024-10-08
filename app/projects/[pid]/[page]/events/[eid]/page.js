@@ -25,10 +25,10 @@ export default function Event({params}) {
     return (
         <div>
             <div className="menu-bar">
-                <Link href={`/projects/${params.pid}/`}>
+                <Link href={`/projects/${params.pid}/${params.page}`}>
                     <button>top</button>
                 </Link>
-                <Link href={`/projects/${params.pid}/design`}>
+                <Link href={`/projects/${params.pid}/${params.page}/design`}>
                     <button>design</button>
                 </Link>
             </div>

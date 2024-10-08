@@ -27,10 +27,10 @@ export default function Design({params}){
     return (
         <div>
             <div className="menu-bar">
-                <Link href={`/projects/${params.pid}/`}>
+                <Link href={`/projects/${params.pid}/${params.page}`}>
                     <button>top</button>
                 </Link>
-                <Link href={`/projects/${params.pid}/events`}>
+                <Link href={`/projects/${params.pid}/${params.page}/events`}>
                     <button>events</button>
                 </Link>
             </div>

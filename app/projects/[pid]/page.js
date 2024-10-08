@@ -1,99 +1,102 @@
 "use client"
+
+import Popup from "@/components/popup"
 import ProjectContext from "@/contexts/project/projectContext";
-import ProjectsContext from "@/contexts/project/projectsContext";
 import Link from "next/link";
-import { useContext, useState } from "react"
+import { useContext, useState } from "react";
+import {Tab, Tabs} from "react-bootstrap";
 
+export default function Pages({params}){
 
-export default function Project({params}){
+    const {project, updateProject} = useContext(ProjectContext);
 
-    const {projects, updateProjects} = useContext(ProjectsContext);
+    const [isOpen, setIsOpen] = useState(false);
+    const [title, setTitle] = useState("");
+    const [tabKey, setTabKey] = useState("pages");
 
-    const exportModel = (e) => {
-        let widgets = {};
-        const design = projects[params.pid].design;
-        Object.entries(design.elements).map(([eid, element]) => {
-            let text = "";
-            if(element.props.general.text) {
-                text = element.props.general.text.value;
-            }else if(element.props.general.value) {
-                text = element.props.general.value.value;
-            }
-            widgets[eid] = {
-                type: element.type,
-                text: text,
-                state: 0,
-                x: element.props.bounds.x.value,
-                y: element.props.bounds.y.value,
-                width: element.props.bounds.w.value,
-                height: element.props.bounds.h.value,
-            }
-        })
-        const blob = new Blob([constructModel(widgets)], {type: "text/plain"})
-        const downloadLink = document.createElement("a");
-
-        downloadLink.href = URL.createObjectURL(blob);
-
-        downloadLink.download = projects[params.pid].title + ".model";
-
-        downloadLink.click();
-
-        // メモリリークを防ぐためにBlob URLを解放
-        URL.revokeObjectURL(downloadLink.href);
+    const onTitleChange = (e) => {
+        setTitle(e.target.value);
     }
 
-    return(
+    const createPage = (e) => {
+        let newProject = {...project};
+        let page = self.crypto.randomUUID();
+        project.pages[page] = {
+            title: title,
+            design: {
+                elements: {}
+            },
+            events: {
+                globalVarialbes: [],
+                event:{}
+            }
+        }
+        updateProject(newProject);
+        setIsOpen(false);
+    }
+
+    const cancel = (e) => {
+        setTitle("");
+        setIsOpen(false);
+    }
+
+    return (
         <div>
             <div className="menu-bar">
-                <Link href={`/projects/${params.pid}/design`}>
-                    <button>design</button>
-                </Link>
-                <Link href={`/projects/${params.pid}/events`}>
-                    <button>events</button>
+                <Link href={`/projects`}>
+                    <button>top page</button>
                 </Link>
             </div>
-            <div className="container" >
-                <button className="btn btn-primary" style={{marginTop: "20px"}} onClick={exportModel}>エクスポートする</button>
+            <div className="container" style={{paddingTop: "10px"}}>
+                <div>
+                    <h3>{project.title}</h3>
+                </div>
+                <hr />
+                <div>
+                    <Tabs id="project-tab" activeKey={tabKey} onSelect={(k) => {setTabKey(k)}}>
+                        <Tab eventKey="pages" title="pages">
+                            <div className="grid">
+                                <button className="btn btn-secondary" onClick={() => {setIsOpen(true)}}>
+                                    <p></p>
+                                    ページを作成
+                                    <p></p>
+                                </button>
+                                {Object.keys(project.pages).map((page) => (
+                                    <Link href={`/projects/${params.pid}/${page}`} key={page}>
+                                        <button className="btn" style={{border: "1px solid black", width: "100%", height:"100%"}}>
+                                            {project.pages[page].title}
+                                        </button>
+                                    </Link>
+                                ))}
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </Tab>
+                        <Tab eventKey="setting" title="project setting">
+
+                        </Tab>
+                    </Tabs>
+                </div>
+                <Popup isOpen={isOpen}>
+                    <div>
+                        <label className="form-label">ページのタイトル</label>
+                        <input type="text" onChange={onTitleChange} className="form-control border-secondary" /> 
+                        {title=="" && <label className="form-label" style={{color:"red"}}>1文字以上入力してください</label>}
+                    </div>
+                    <p></p>
+                    <div style={{display: "flex", justifyContent: "flex-end"}}>
+                        <button className="btn btn-secondary" onClick={cancel}>キャンセル</button>
+                        {title!= "" ? (
+                            <button className="btn btn-primary" style={{marginLeft: "10px"}} onClick={createPage}>決定</button>
+                        ) : (
+                            <button className="btn btn-primary" style={{marginLeft: "10px"}} disabled>決定</button>
+                        )}
+                    </div>
+                </Popup>
+                
             </div>
         </div>
     )
-}
-
-function constructModel(widgets) {
-return `
-init {
-screen := {
-        "widgets": ${JSON.stringify(widgets)}, 
-        "layout": true
-    }
-}
-
-native channel ScreenUpdate {
-	in screen(curSc: Json, update(curSc, nextSc)) = nextSc
-}
-
-native channel SetLayout {
-	in screen.layout(curLayout: Bool, setLayout(nextLayout)) = nextLayout
-}
-
-native channel SetVisible(wid: Str) {
-	in screen.widgets.{wid}.visible(curVisible: Bool, setVisible(nextVisible)) = nextVisible
-}
-
-native channel SetText(wid: Str) {
-	in screen.widgets.{wid}.text(curText: Str, setText(nextText)) = nextText
-}
-
-native channel MouseEvent(wid: Str) {
-	out screen.widgets.{wid}.state(curState: Int, mouseEvent(nextState)) = nextState
-}
-
-native channel TextEvent(wid: Str) {
-	out screen.widgets.{wid}.text(curText: Str, textEvent(nextText)) = nextText
-}
-
-channel AddTextInput {
-	out screen.widgets(widgets: Map, addTextInput(wid: Str)) = insert(widgets, wid, {"type": "textInput", "text": "", "state": 0})
-}
-`
 }

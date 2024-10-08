@@ -37,10 +37,10 @@ export default function Events({params}) {
     return (
         <div>
             <div className="menu-bar">
-                <Link href={`/projects/${params.pid}/`}>
+                <Link href={`/projects/${params.pid}/${params.page}`}>
                     <button>top</button>
                 </Link>
-                <Link href={`/projects/${params.pid}/design`}>
+                <Link href={`/projects/${params.pid}/${params.page}/design`}>
                     <button>design</button>
                 </Link>
             </div>
@@ -51,7 +51,7 @@ export default function Events({params}) {
                     <p></p>
                 </button>
                 {Object.entries(events.event).map(([eid, event]) => (
-                    <Link href={`/projects/${params.pid}/events/${eid}`} key={eid}>
+                    <Link href={`/projects/${params.pid}/${params.page}/events/${eid}`} key={eid}>
                         <button className="btn" style={{border: "1px solid black", width: "100%", height:"100%"}}>
                             {event.title}
                         </button>

@@ -23,13 +23,7 @@ export default function ProjectHub() {
             ...projects,
             [newPid]: {
                 title: title,
-                design: {
-                    elements: {}
-                },
-                events: {
-                    globalVarialbes: [],
-                    event:{}
-                }
+                pages:{}
             }
         })
     }
@@ -54,16 +48,6 @@ export default function ProjectHub() {
                         </button>
                     </Link>
                 ))}
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
                 <div></div>
                 <div></div>
                 <div></div>
