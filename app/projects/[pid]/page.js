@@ -18,7 +18,7 @@ export default function Pages({params}){
         setTitle(e.target.value);
     }
 
-    const createPage = (e) => {
+    const createPage = async (e) => {
         let newProject = {...project};
         let page = self.crypto.randomUUID();
         project.pages[page] = {

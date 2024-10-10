@@ -8,11 +8,9 @@ export async function POST(request) {
         const body = await request.json();
         let id = body.id;
         let other = body.other;
-        const tmp = JSON.parse(JSON.stringify(other));
-        console.log(tmp)
         const result = await collection.updateOne(
             {_id: id},
-            {$set: {...tmp}},
+            {$set: {...other}},
             {upsert: true}
         );
         // const result = await collection.insertOne({

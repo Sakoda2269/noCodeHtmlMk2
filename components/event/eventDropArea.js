@@ -46,7 +46,6 @@ export default function EventDropArea() {
                 selector: dragging.selector,
                 lacalVariables: dragging.localVariables
             }
-
             updateEvent(newEvent);
             setDragging({});
         }
