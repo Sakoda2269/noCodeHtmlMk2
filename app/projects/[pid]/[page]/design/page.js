@@ -8,17 +8,17 @@ import DesignContext from "@/contexts/design/designContext";
 import ElementDraggingContext from "@/contexts/design/elementDraggingContext";
 import ElementSelectingContext from "@/contexts/design/elementSelectingContext";
 import ProjectContext from "@/contexts/project/projectContext"
+import UndoContext from "@/contexts/undoContext";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react"
 
 export default function Design({ params }) {
 
-
     const { project, updateProject } = useContext(ProjectContext);
+
     const [design, setDesign] = useState(project.pages[params.page].design);
-
     const [isOpen, setIsOpen] = useState(false); 
-
+    const [selecting, setSelecting] = useState("");
     const [dragging, setDragging] = useState({
         id: "",
         type: "",
@@ -27,7 +27,9 @@ export default function Design({ params }) {
         mouseX: 0,
         mouseY: 0
     });
-    const [selecting, setSelecting] = useState("");
+
+    const [undoStack, setUndoStack] = useState([]);
+    const [redo, setRedo] = useState({});
 
     useEffect(() => {
         const beforeReload = (e) => {
@@ -41,6 +43,35 @@ export default function Design({ params }) {
             window.removeEventListener("beforeunload", beforeReload);
         }
     }, []);
+
+    const pushUndo = (action) => {
+        let newUndo = [...undoStack, action];
+        setUndoStack(newUndo);
+    }
+
+    const undo = (e) => {
+        if(undoStack.length == 0) {
+            return;
+        }
+        console.log(undoStack)
+        const lastAction = undoStack[undoStack.length - 1];
+        setUndoStack(undoStack.slice(0, -1));
+        const action = lastAction.action;
+        switch(action) {
+            case "createElement":
+                const {[lastAction.id]: tmp, ...nextelements} = design.elements;
+                updateDesign({...design, ["elements"]: nextelements});
+                break;
+            case "moveElement":
+                const id = lastAction.id;
+                const prev = lastAction.from;
+                const newDesign = {...design};
+                newDesign.elements[id].props.bounds.x.value = prev.x;
+                newDesign.elements[id].props.bounds.y.value = prev.y;
+                updateDesign(newDesign);
+                break;
+        }
+    }
 
 
     const updateDesign = (newDesign) => {
@@ -64,24 +95,28 @@ export default function Design({ params }) {
             <div className="menu-bar">
                 <button onClick={() => {setIsOpen(true)}}>top</button>
                 <button onClick={saveDesign}>save</button>
+                <button onClick={undo}>undo</button>
             </div>
-            <DesignContext.Provider value={{ design, updateDesign }}>
-                <ElementSelectingContext.Provider value={{ selecting, setSelecting }}>
-                    <ElementDraggingContext.Provider value={{ dragging, setDragging }}>
-                        <div className="row" style={{ height: "100vh" }}>
-                            <div className="col-2" style={{ border: "1px solid black", padding: "10px" }}>
-                                <ElementsList pid={params.pid} />
+
+            <UndoContext.Provider value={{undoStack, pushUndo}}>
+                <DesignContext.Provider value={{ design, updateDesign }}>
+                    <ElementSelectingContext.Provider value={{ selecting, setSelecting }}>
+                        <ElementDraggingContext.Provider value={{ dragging, setDragging }}>
+                            <div className="row" style={{ height: "100vh" }}>
+                                <div className="col-2" style={{ border: "1px solid black", padding: "10px" }}>
+                                    <ElementsList pid={params.pid} />
+                                </div>
+                                <div className="col-7" style={{ border: "1px solid black", padding: "10px" }}>
+                                    <ElementsDropArea pid={params.pid} />
+                                </div>
+                                <div className="col-3" style={{ border: "1px solid black", padding: "10px" }}>
+                                    <ElementPropertyArea pid={params.pid} page={params.page} />
+                                </div>
                             </div>
-                            <div className="col-7" style={{ border: "1px solid black", padding: "10px" }}>
-                                <ElementsDropArea pid={params.pid} />
-                            </div>
-                            <div className="col-3" style={{ border: "1px solid black", padding: "10px" }}>
-                                <ElementPropertyArea pid={params.pid} page={params.page} />
-                            </div>
-                        </div>
-                    </ElementDraggingContext.Provider>
-                </ElementSelectingContext.Provider>
-            </DesignContext.Provider>
+                        </ElementDraggingContext.Provider>
+                    </ElementSelectingContext.Provider>
+                </DesignContext.Provider>
+            </UndoContext.Provider>
 
             <Popup isOpen={isOpen}>
                 <div>
