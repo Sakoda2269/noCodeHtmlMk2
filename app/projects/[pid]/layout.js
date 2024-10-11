@@ -8,14 +8,29 @@ export default function projectLayout({children, params}){
 
     const {projects, updateProjects} = useContext(ProjectsContext);
 
-    const [project, setProject] = useState(
-        projects[params.pid] ? projects[params.pid] : async () => {
-            const res = await fetch(`/api/getData?pid=${params.pid}`, {method: "GET"});
-            const data = await res.json();
-            console.log(data);  
-            return data;
+    const [project, setProject] = useState(projects[params.pid]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        if(!project) {
+            const get = async() => {
+                try{
+                    const res = await fetch(`/api/getData?pid=${params.pid}`, {method:"GET"});
+                    const data = await res.json();
+                    if(data){
+                        setProject(data);
+                    }
+                } catch (error){
+                    console.log(error);
+                } finally {
+                    setIsLoading(false);
+                }
+            }
+            get();
+        } else {
+            setIsLoading(false);
         }
-    );
+    }, [])
 
     const updateProject = async (newProject) => {
         setProject(newProject)
@@ -23,23 +38,26 @@ export default function projectLayout({children, params}){
             ...projects,
             [params.pid]: newProject
         })
-        console.log(newProject);
         const data = {id: params.pid, other: newProject};
         const res = await fetch("/api/setData", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify(data)
           });
-            const res2 = await fetch(`/api/getData?pid=${params.pid}`, {method: "GET"});
-            const data2 = await res2.json();
-            console.log(data2);  
     }
     
     return(
         <div>
+        {isLoading ? (
+            <div>
+                Loading...
+            </div>
+        ) : (
             <ProjectContext.Provider value={{project, updateProject}}>
                 {children}
             </ProjectContext.Provider>
+        )}
+            
         </div>
     )
 }
