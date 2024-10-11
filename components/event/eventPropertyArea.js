@@ -1,11 +1,12 @@
 import DesignContext from "@/contexts/design/designContext";
 import EventContext from "@/contexts/event/eventContext";
 import EventSelectingContext from "@/contexts/event/eventSelectingContext";
+import ProjectContext from "@/contexts/project/projectContext";
 import { useContext, useEffect, useState } from "react";
 import { Accordion, AccordionBody, AccordionButton, AccordionCollapse, AccordionHeader, AccordionItem, Card, CardBody } from "react-bootstrap";
 
 
-export default function EventPropertyArea() {
+export default function EventPropertyArea({page}) {
 
     const {selecting, setSelecting} = useContext(EventSelectingContext);
     const {event, updateEvent} = useContext(EventContext);
@@ -36,7 +37,7 @@ export default function EventPropertyArea() {
                             <AccordionHeader>入力{index}</AccordionHeader>
                             <AccordionBody>
                                 <Property aid={selecting} types={event.actions[selecting].selector.inTypes} 
-                                        index={index} ioType="in" type={item.type} value={item.value}/>
+                                        index={index} ioType="in" type={item.type} value={item.value} page={page}/>
                             </AccordionBody>
                         </AccordionItem>
                     </div>
@@ -47,7 +48,7 @@ export default function EventPropertyArea() {
                             <AccordionHeader>出力{index}</AccordionHeader>
                             <AccordionBody>
                                 <Property aid={selecting} types={event.actions[selecting].selector.outTypes} 
-                                        index={index} type={item.type} value={item.value} ioType="out"/>
+                                        index={index} type={item.type} value={item.value} ioType="out" page={page}/>
                             </AccordionBody>
                         </AccordionItem>
                     </div>
@@ -62,10 +63,12 @@ export default function EventPropertyArea() {
     )
 }
 
-function Property({aid, types, index, type, value, ioType}) {
+function Property({aid, types, index, type, value, ioType, page}) {
 
-    const {design, updateDesign} = useContext(DesignContext);
+    const {project, updateProject} = useContext(ProjectContext);
     const {event, updateEvent} = useContext(EventContext);
+
+    const design = project.pages[page].design;
 
     const [typeSelect, setTypeSelect] = useState(type);
     const [newValue, setNewValue] = useState(() => {
@@ -104,6 +107,7 @@ function Property({aid, types, index, type, value, ioType}) {
             }
         }
     });
+
 
     useEffect(() => {
         setNewValue(() => {

@@ -21,7 +21,7 @@ export default function Pages({params}){
     const createPage = async (e) => {
         let newProject = {...project};
         let page = self.crypto.randomUUID();
-        project.pages[page] = {
+        const tmp = {
             title: title,
             design: {
                 elements: {}
@@ -30,8 +30,14 @@ export default function Pages({params}){
                 globalVarialbes: [],
                 event:{}
             }
-        }
+        };
+        newProject.pages[page] = tmp;
         updateProject(newProject);
+        const res = await fetch(`/api/saveProjects/${params.pid}/pages/${page}`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(tmp)
+        });
         setIsOpen(false);
     }
 

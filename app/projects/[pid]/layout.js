@@ -33,17 +33,18 @@ export default function projectLayout({children, params}){
     }, [])
 
     const updateProject = async (newProject) => {
+        console.log("project update")
         setProject(newProject)
         updateProjects({
             ...projects,
             [params.pid]: newProject
         })
-        const data = {id: params.pid, other: newProject};
-        const res = await fetch("/api/setData", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(data)
-          });
+        // const data = {id: params.pid, other: newProject};
+        // const res = await fetch("/api/setData", {
+        //     method: "POST",
+        //     headers: {"Content-Type": "application/json"},
+        //     body: JSON.stringify(data)
+        //   });
     }
     
     return(

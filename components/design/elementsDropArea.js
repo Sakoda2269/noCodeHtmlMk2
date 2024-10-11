@@ -40,20 +40,21 @@ export default function ElementsDropArea({pid}) {
             const offsetY = dragging.mouseY;
             const x = e.pageX - offsetX - pos.x;
             const y = e.pageY - offsetY - pos.y;
-            let elements = design.elements;
             let props = dragging.props;
             props.bounds.x = {type: "number", value: x};
             props.bounds.y = {type: "number", value: y};
             props.bounds.w = {type: "number", value: props.bounds.w.value};
             props.bounds.h = {type: "number", value: props.bounds.h.value};
-            elements[id] = {
-                type: dragging.type,
-                props: props,
-                events: dragging.events
-            };
             updateDesign({
                 ...design,
-                ["elements"]: elements
+                ["elements"]: {
+                    ...design.elements,
+                    [id]: {
+                        type: dragging.type,
+                        props: props,
+                        events: dragging.events
+                    }
+                }
             });
             setDragging({});
         }

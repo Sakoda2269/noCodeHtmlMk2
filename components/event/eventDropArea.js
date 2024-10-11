@@ -34,19 +34,23 @@ export default function EventDropArea() {
         if(Object.keys(dragging).length !== 0){
             let offsetX = dragging.mouseX;
             let offsetY = dragging.mouseY;
-            let newEvent = {...event};
             let eBounds = dragging.bounds;
             eBounds.x = e.pageX - offsetX - bounds.x;
             eBounds.y = e.pageY - offsetY - bounds.y;
-            newEvent.actions[self.crypto.randomUUID().replace(/-/g, "")] = {
-                type: dragging.type,
-                bounds: eBounds,
-                parents: dragging.parent,
-                children: dragging.child,
-                selector: dragging.selector,
-                lacalVariables: dragging.localVariables
-            }
-            updateEvent(newEvent);
+            updateEvent({
+                ...event,
+                ["actions"]: {
+                    ...event.actions,
+                    [self.crypto.randomUUID().replace(/-/g, "")] : {
+                        type: dragging.type,
+                        bounds: eBounds,
+                        parents: dragging.parent,
+                        children: dragging.child,
+                        selector: dragging.selector,
+                        lacalVariables: dragging.localVariables
+                    }
+                }
+            });
             setDragging({});
         }
     }

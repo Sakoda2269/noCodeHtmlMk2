@@ -27,12 +27,12 @@ export default function ProjectHub() {
             ...projects,
             [newPid]: tmp
         })
-        const data = {id: newPid, other: tmp};
-        const res = await fetch("/api/setData", {
+
+        const res = await fetch(`/api/saveProjects/${newPid}`, {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify(data)
-          });
+            body: JSON.stringify(tmp)
+        });
     }
 
     const cancel = (e) => {

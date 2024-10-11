@@ -6,23 +6,35 @@ import EventContext from "@/contexts/event/eventContext";
 import EventDraggingContext from "@/contexts/event/eventDraggingContext";
 import EventsContext from "@/contexts/event/eventsContext";
 import EventSelectingContext from "@/contexts/event/eventSelectingContext";
+import ProjectContext from "@/contexts/project/projectContext";
 import Link from "next/link";
 import { useContext, useState } from "react";
 
 
 export default function Event({params}) {
 
-    const {events, updateEvents} = useContext(EventsContext);
+    const {project, updateProject} = useContext(ProjectContext);
 
-    const [event, setEvent] = useState(events.event[params.eid]);
+    const [event, setEvent] = useState(project.pages[params.page].events.event[params.eid]);
     const [dragging, setDragging] = useState({});
     const [selecting, setSelecting] = useState("");
 
     const updateEvent = (newEvent) => {
+        console.log("update event")
         setEvent(newEvent);
-        let newEvents = events;
-        newEvents[params.eid] = newEvent;
-        updateEvents(newEvents)
+    }
+
+    const saveEvent = async () => {
+        let newProject = project;
+        newProject.pages[params.page].events.event[params.eid] = event;
+        updateProject(newProject);
+
+        const res = await fetch(`/api/saveProjects/${params.pid}/pages/${params.page}/events/event/${params.eid}`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(event)
+        });
+
     }
 
     return (
@@ -31,9 +43,10 @@ export default function Event({params}) {
                 <Link href={`/projects/${params.pid}/${params.page}`}>
                     <button>top</button>
                 </Link>
-                <Link href={`/projects/${params.pid}/${params.page}/design`}>
-                    <button>design</button>
+                <Link href={`/projects/${params.pid}/${params.page}/events`}>
+                    <button>events</button>
                 </Link>
+                <button onClick={saveEvent}>save</button>
             </div>
             <EventContext.Provider value={{event, updateEvent}}>
                 <EventDraggingContext.Provider value={{dragging, setDragging}}>
@@ -46,7 +59,7 @@ export default function Event({params}) {
                                 <EventDropArea eid={params.eid}/>
                             </div>
                             <div className="col-3" style={{border:"1px solid black", padding: "10px"}}>
-                                <EventPropertyArea eid={params.eid}/>
+                                <EventPropertyArea eid={params.eid} page={params.page}/>
                             </div>
                         </div>
                     </EventSelectingContext.Provider>
