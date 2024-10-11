@@ -1,8 +1,7 @@
 "use client"
 import ProjectContext from "@/contexts/project/projectContext";
-import ProjectsContext from "@/contexts/project/projectsContext";
 import Link from "next/link";
-import { useContext, useState } from "react"
+import { useContext } from "react"
 
 
 export default function Project({params}){

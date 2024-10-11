@@ -4,11 +4,11 @@ import Popup from "@/components/popup"
 import ProjectContext from "@/contexts/project/projectContext";
 import Link from "next/link";
 import { useContext, useState } from "react";
-import {Tab, Tabs} from "react-bootstrap";
+import { Tab, Tabs } from "react-bootstrap";
 
-export default function Pages({params}){
+export default function Pages({ params }) {
 
-    const {project, updateProject} = useContext(ProjectContext);
+    const { project, updateProject } = useContext(ProjectContext);
 
     const [isOpen, setIsOpen] = useState(false);
     const [title, setTitle] = useState("");
@@ -19,7 +19,7 @@ export default function Pages({params}){
     }
 
     const createPage = async (e) => {
-        let newProject = {...project};
+        let newProject = { ...project };
         let page = self.crypto.randomUUID();
         const tmp = {
             title: title,
@@ -28,14 +28,14 @@ export default function Pages({params}){
             },
             events: {
                 globalVarialbes: [],
-                event:{}
+                event: {}
             }
         };
         newProject.pages[page] = tmp;
         updateProject(newProject);
         const res = await fetch(`/api/saveProjects/${params.pid}/pages/${page}`, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(tmp)
         });
         setIsOpen(false);
@@ -53,23 +53,23 @@ export default function Pages({params}){
                     <button>top page</button>
                 </Link>
             </div>
-            <div className="container" style={{paddingTop: "10px"}}>
+            <div className="container" style={{ paddingTop: "10px" }}>
                 <div>
                     <h3>{project.title}</h3>
                 </div>
                 <hr />
                 <div>
-                    <Tabs id="project-tab" activeKey={tabKey} onSelect={(k) => {setTabKey(k)}}>
+                    <Tabs id="project-tab" activeKey={tabKey} onSelect={(k) => { setTabKey(k) }}>
                         <Tab eventKey="pages" title="pages">
                             <div className="grid">
-                                <button className="btn btn-secondary" onClick={() => {setIsOpen(true)}}>
+                                <button className="btn btn-secondary" onClick={() => { setIsOpen(true) }}>
                                     <p></p>
                                     ページを作成
                                     <p></p>
                                 </button>
                                 {Object.keys(project.pages).map((page) => (
                                     <Link href={`/projects/${params.pid}/${page}`} key={page}>
-                                        <button className="btn" style={{border: "1px solid black", width: "100%", height:"100%"}}>
+                                        <button className="btn" style={{ border: "1px solid black", width: "100%", height: "100%" }}>
                                             {project.pages[page].title}
                                         </button>
                                     </Link>
@@ -88,20 +88,20 @@ export default function Pages({params}){
                 <Popup isOpen={isOpen}>
                     <div>
                         <label className="form-label">ページのタイトル</label>
-                        <input type="text" onChange={onTitleChange} className="form-control border-secondary" /> 
-                        {title=="" && <label className="form-label" style={{color:"red"}}>1文字以上入力してください</label>}
+                        <input type="text" onChange={onTitleChange} className="form-control border-secondary" />
+                        {title == "" && <label className="form-label" style={{ color: "red" }}>1文字以上入力してください</label>}
                     </div>
                     <p></p>
-                    <div style={{display: "flex", justifyContent: "flex-end"}}>
+                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
                         <button className="btn btn-secondary" onClick={cancel}>キャンセル</button>
-                        {title!= "" ? (
-                            <button className="btn btn-primary" style={{marginLeft: "10px"}} onClick={createPage}>決定</button>
+                        {title != "" ? (
+                            <button className="btn btn-primary" style={{ marginLeft: "10px" }} onClick={createPage}>決定</button>
                         ) : (
-                            <button className="btn btn-primary" style={{marginLeft: "10px"}} disabled>決定</button>
+                            <button className="btn btn-primary" style={{ marginLeft: "10px" }} disabled>決定</button>
                         )}
                     </div>
                 </Popup>
-                
+
             </div>
         </div>
     )
