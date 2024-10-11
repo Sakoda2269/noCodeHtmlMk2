@@ -6,12 +6,13 @@ import { useContext, useEffect, useState } from "react";
 import {Tab, Tabs} from "react-bootstrap";
 import Popup from "../popup";
 import EventsContext from "@/contexts/event/eventsContext";
+import ProjectContext from "@/contexts/project/projectContext";
+import ProjectsContext from "@/contexts/project/projectsContext";
 
-export default function ElementPropertyArea({pid}) {
+export default function ElementPropertyArea({pid, page}) {
 
     const {design, updateDesign} = useContext(DesignContext);
     const {selecting, setSelecting} = useContext(ElementSelectingContext);
-    const {events, updateEvents} = useContext(EventsContext)
 
     const [isOpen, setIsOpen] = useState(false);
     const [tabKey, setTabKey] = useState("general");
@@ -85,7 +86,7 @@ export default function ElementPropertyArea({pid}) {
                     ))}
                     <Tab eventKey="event" title="event">
                         {Object.entries(design.elements[selecting].events).map(([key, value]) => (
-                            <EventEditForm selecting={selecting} eventName={key} prevEid={value} key={key}/>
+                            <EventEditForm selecting={selecting} eventName={key} prevEid={value} key={key} page={page}/>
                         ))}
                     </Tab>
                 </Tabs>
@@ -158,9 +159,9 @@ function PropertyEditForm({selecting, propGroupName, propName, data}) {
     return null;
 }
 
-function EventEditForm({selecting, eventName, prevEid}) {
+function EventEditForm({selecting, eventName, prevEid, page}) {
 
-    const {events, updateEvents} = useContext(EventsContext);
+    const {project, updateProject} = useContext(ProjectContext);
     const {design, updateDesign} = useContext(DesignContext);
 
     const [selectEvent, setSelectEvent] = useState(prevEid);
@@ -176,8 +177,8 @@ function EventEditForm({selecting, eventName, prevEid}) {
             <label className="form-label">{eventName}</label>
             <select className="form-select" value={selectEvent} onChange={changeEvent}>
                 <option value="" disabled>Select...</option>
-                {Object.keys(events.event).map((eid) => (
-                    <option value={eid} key={eid}>{events.event[eid].title}</option>
+                {Object.entries(project.pages[page].events.event).map(([eid, event]) => (
+                    <option value={eid} key={eid}>{event.title}</option>
                 ))}
             </select>
         </div>
