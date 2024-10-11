@@ -20,6 +20,9 @@ export default function Event({params}) {
 
     const updateEvent = (newEvent) => {
         setEvent(newEvent);
+        let newEvents = events;
+        newEvents[params.eid] = newEvent;
+        updateEvents(newEvents)
     }
 
     return (

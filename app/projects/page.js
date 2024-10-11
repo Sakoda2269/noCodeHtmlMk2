@@ -16,16 +16,23 @@ export default function ProjectHub() {
         setTitle(e.target.value);
     }
 
-    const createProject = () => {
+    const createProject = async () => {
         let newPid = self.crypto.randomUUID();
         setIsOpen(false);
+        const tmp = {
+            title: title,
+            pages:{}
+        }
         updateProjects({
             ...projects,
-            [newPid]: {
-                title: title,
-                pages:{}
-            }
+            [newPid]: tmp
         })
+        const data = {id: newPid, other: tmp};
+        const res = await fetch("/api/setData", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(data)
+          });
     }
 
     const cancel = (e) => {

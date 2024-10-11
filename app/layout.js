@@ -21,8 +21,9 @@ export default function RootLayout({ children }) {
 
   const [projects, setProjects] = useState({});
 
-  const updateProjects = (newProjects) => { 
-    setProjects(newProjects)
+  const updateProjects = async (newProjects) => {
+    setProjects(newProjects);
+    // let res = await fetch("api/getData", {method: "GET"});
   }
 
 
