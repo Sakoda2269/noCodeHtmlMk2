@@ -29,7 +29,7 @@ export default function Design({ params }) {
     });
 
     const [undoStack, setUndoStack] = useState([]);
-    const [redo, setRedo] = useState({});
+    const [redoAction, setRedo] = useState({});
 
     useEffect(() => {
         const beforeReload = (e) => {
@@ -46,6 +46,7 @@ export default function Design({ params }) {
 
     const pushUndo = (action) => {
         let newUndo = [...undoStack, action];
+        setRedo({});
         setUndoStack(newUndo);
     }
 
@@ -56,23 +57,81 @@ export default function Design({ params }) {
         console.log(undoStack)
         const lastAction = undoStack[undoStack.length - 1];
         setUndoStack(undoStack.slice(0, -1));
-        const action = lastAction.action;
-        switch(action) {
+        const id = lastAction.id;
+        let nextDesign = null;
+        setRedo(lastAction);
+        switch(lastAction.action) {
             case "createElement":
-                const {[lastAction.id]: tmp, ...nextelements} = design.elements;
+                setSelecting("");
+                const {[id]: tmp, ...nextelements} = design.elements;
+                console.log(nextelements)
                 updateDesign({...design, ["elements"]: nextelements});
                 break;
             case "moveElement":
-                const id = lastAction.id;
                 const prev = lastAction.from;
-                const newDesign = {...design};
-                newDesign.elements[id].props.bounds.x.value = prev.x;
-                newDesign.elements[id].props.bounds.y.value = prev.y;
-                updateDesign(newDesign);
+                nextDesign = {...design};
+                nextDesign.elements[id].props.bounds.x.value = prev.x;
+                nextDesign.elements[id].props.bounds.y.value = prev.y;
+                updateDesign(nextDesign);
+                break;
+            case "deleteElement":
+                const elem = lastAction.data;
+                nextDesign = {...design};
+                nextDesign.elements[id] = elem;
+                updateDesign(nextDesign);
+                break;
+            case "changeSize":
+                const prev1 = lastAction.prev;
+                nextDesign = {...design};
+                nextDesign.elements[id].props.bounds.x.value = prev1.x;
+                nextDesign.elements[id].props.bounds.w.value = prev1.w;
+                nextDesign.elements[id].props.bounds.h.value = prev1.h;
+                nextDesign.elements[id].props.bounds.y.value = prev1.y;
+                updateDesign(nextDesign);
                 break;
         }
     }
 
+    const redo = (e) => {
+        if(Object.keys(redoAction).length == 0) {
+            return;
+        }
+        setRedo({});
+        pushUndo(redoAction);
+        const id = redoAction.id;
+        let nextDesign = null;
+        switch(redoAction.action) {
+            case "createElement":
+                nextDesign = {...design};
+                nextDesign.elements[id] = redoAction.value;
+                updateDesign(nextDesign);
+                break;
+            case "moveElement":
+                const next = redoAction.to;
+                nextDesign = {...design};
+                nextDesign.elements[id].props.bounds.x.value = next.x;
+                nextDesign.elements[id].props.bounds.y.value = next.y;
+                updateDesign(nextDesign);
+                break;
+            case "deleteElement":
+                const {[id]: tmp, ...other} = design.elements;
+                setSelecting("");
+                updateDesign({
+                    ...design,
+                    ["elements"]: other
+                })
+                break;
+            case "changeSize":
+                const next1 = redoAction.next;
+                nextDesign = {...design};
+                nextDesign.elements[id].props.bounds.x.value = next1.x;
+                nextDesign.elements[id].props.bounds.w.value = next1.w;
+                nextDesign.elements[id].props.bounds.h.value = next1.h;
+                nextDesign.elements[id].props.bounds.y.value = next1.y;
+                updateDesign(nextDesign);
+                break;
+    }
+    }
 
     const updateDesign = (newDesign) => {
         setDesign(newDesign);
@@ -82,7 +141,8 @@ export default function Design({ params }) {
         let newProject = { ...project };
         newProject.pages[params.page].design = design;
         updateProject(newProject);
-
+        setUndoStack([]);
+        setRedo({});
         const res = await fetch(`/api/saveProjects/${params.pid}/pages/${params.page}/design`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -93,9 +153,12 @@ export default function Design({ params }) {
     return (
         <div>
             <div className="menu-bar">
-                <button onClick={() => {setIsOpen(true)}}>top</button>
-                <button onClick={saveDesign}>save</button>
-                <button onClick={undo}>undo</button>
+                {undoStack.length != 0 ? <button onClick={() => {setIsOpen(true)}}>top</button> : <Link href={`/projects/${params.pid}/${params.page}`}>
+                    <button>top</button>
+                </Link>}
+                {undoStack.length != 0 ? <button onClick={saveDesign}>save</button> : <button disabled>save</button>}
+                {undoStack.length != 0 ? <button onClick={undo}>undo</button> : <button disabled>undo</button>}
+                {Object.keys(redoAction).length != 0 ? <button onClick={redo}>redo</button> : <button disabled>redo</button>}
             </div>
 
             <UndoContext.Provider value={{undoStack, pushUndo}}>

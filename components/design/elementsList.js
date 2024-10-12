@@ -109,6 +109,22 @@ function ElementsBase({ children, id, element }) {
         let dy = sizeSqPos[0].y + 5;
         let dw = sizeSqPos[2].x - sizeSqPos[0].x;
         let dh = sizeSqPos[2].y - sizeSqPos[0].y;
+        pushUndo({
+            action: "changeSize",
+            id: id,
+            prev: {
+                x: element.props.bounds.x.value,
+                y: element.props.bounds.y.value,
+                w: element.props.bounds.w.value,
+                h: element.props.bounds.h.value,
+            },
+            next: {
+                x: element.props.bounds.x.value + dx,
+                y: element.props.bounds.y.value + dy,
+                w: dw,
+                h: dh,
+            }
+        });
         element.props.bounds.x.value += dx;
         element.props.bounds.y.value += dy;
         element.props.bounds.w.value = dw;
