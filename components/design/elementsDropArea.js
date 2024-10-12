@@ -1,18 +1,9 @@
 "use client"
 
-import DesignContext from "@/contexts/design/designContext";
-import ElementDraggingContext from "@/contexts/design/elementDraggingContext"
-import { useContext, useEffect, useRef, useState } from "react"
-import { elementsMap } from "./elementsList";
-import ElementSelectingContext from "@/contexts/design/elementSelectingContext";
-import UndoContext from "@/contexts/undoContext";
+import { useEffect, useRef, useState } from "react"
+import { AllComponent } from "./elementsList";
 
-export default function ElementsDropArea({ pid }) {
-
-    const { dragging, setDragging } = useContext(ElementDraggingContext);
-    const { design, updateDesign } = useContext(DesignContext);
-    const { selecting, setSelecting } = useContext(ElementSelectingContext);
-    const { undoStack, pushUndo } = useContext(UndoContext);
+export default function ElementsDropArea({ dragging, setDragging, selecting, design, updateDesign, setSelecting, pushUndo }) {
 
     const [pos, setPos] = useState({ x: 0, y: 0 });
     const ref = useRef(null);
@@ -75,10 +66,10 @@ export default function ElementsDropArea({ pid }) {
     return (
         <div style={areaStyle} onDrop={dropElements} onClick={(e) => { setSelecting("") }} onDragOver={(e) => { e.preventDefault() }} ref={ref}>
             {Object.entries(design.elements).map(([id, value]) => {
-                const Component = elementsMap[value.type];
                 return (
                     <span key={id} style={{ position: "absolute", left: `${value.props.bounds.x.value}px`, top: `${value.props.bounds.y.value}px` }}>
-                        <Component id={id} element={value} />
+                        <AllComponent type={value.type} id={id} element={value} selecting={selecting} setSelecting={setSelecting}
+                design={design} updateDesign={updateDesign} pushUndo={pushUndo}/>
                     </span>
                 )
             })}

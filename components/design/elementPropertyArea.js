@@ -1,20 +1,11 @@
 "use client"
 
-import DesignContext from "@/contexts/design/designContext";
-import ElementSelectingContext from "@/contexts/design/elementSelectingContext";
 import { useContext, useEffect, useState } from "react";
 import { Tab, Tabs } from "react-bootstrap";
 import Popup from "../popup";
-import EventsContext from "@/contexts/event/eventsContext";
 import ProjectContext from "@/contexts/project/projectContext";
-import ProjectsContext from "@/contexts/project/projectsContext";
-import UndoContext from "@/contexts/undoContext";
 
-export default function ElementPropertyArea({ pid, page }) {
-
-    const { design, updateDesign } = useContext(DesignContext);
-    const { selecting, setSelecting } = useContext(ElementSelectingContext);
-    const { undoStack, pushUndo } = useContext(UndoContext);
+export default function ElementPropertyArea({ page, design, updateDesign, selecting, setSelecting, pushUndo }) {
 
     const [isOpen, setIsOpen] = useState(false);
     const [tabKey, setTabKey] = useState("general");
@@ -77,7 +68,7 @@ export default function ElementPropertyArea({ pid, page }) {
                                 </div>
                             )}
                             {Object.entries(props).map(([prop, value]) => (
-                                <PropertyEditForm selecting={selecting} propGroupName={propName} propName={prop} data={value} key={prop} />
+                                <PropertyEditForm selecting={selecting} propGroupName={propName} propName={prop} data={value} key={prop} design={design} updateDesign={updateDesign} />
                             ))}
                             {propName == "style" && (
                                 <div style={{ display: "flex", "justifyContent": "center" }}>
@@ -93,7 +84,7 @@ export default function ElementPropertyArea({ pid, page }) {
                     ))}
                     <Tab eventKey="event" title="event">
                         {Object.entries(design.elements[selecting].events).map(([key, value]) => (
-                            <EventEditForm selecting={selecting} eventName={key} prevEid={value} key={key} page={page} />
+                            <EventEditForm selecting={selecting} eventName={key} prevEid={value} key={key} page={page} design={design}/>
                         ))}
                     </Tab>
                 </Tabs>
@@ -126,9 +117,8 @@ export default function ElementPropertyArea({ pid, page }) {
     )
 }
 
-function PropertyEditForm({ selecting, propGroupName, propName, data }) {
+function PropertyEditForm({ selecting, propGroupName, propName, data, design, updateDesign }) {
 
-    const { design, updateDesign } = useContext(DesignContext);
     const [value, setValue] = useState(data.value);
 
     useEffect(() => {
@@ -166,10 +156,9 @@ function PropertyEditForm({ selecting, propGroupName, propName, data }) {
     return null;
 }
 
-function EventEditForm({ selecting, eventName, prevEid, page }) {
+function EventEditForm({ selecting, eventName, prevEid, page, design }) {
 
     const { project, updateProject } = useContext(ProjectContext);
-    const { design, updateDesign } = useContext(DesignContext);
 
     const [selectEvent, setSelectEvent] = useState(prevEid);
 
