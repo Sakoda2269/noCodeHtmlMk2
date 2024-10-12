@@ -8,17 +8,17 @@ import DesignContext from "@/contexts/design/designContext";
 import ElementDraggingContext from "@/contexts/design/elementDraggingContext";
 import ElementSelectingContext from "@/contexts/design/elementSelectingContext";
 import ProjectContext from "@/contexts/project/projectContext"
+import UndoContext from "@/contexts/undoContext";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react"
 
 export default function Design({ params }) {
 
-
     const { project, updateProject } = useContext(ProjectContext);
+
     const [design, setDesign] = useState(project.pages[params.page].design);
-
     const [isOpen, setIsOpen] = useState(false); 
-
+    const [selecting, setSelecting] = useState("");
     const [dragging, setDragging] = useState({
         id: "",
         type: "",
@@ -27,7 +27,9 @@ export default function Design({ params }) {
         mouseX: 0,
         mouseY: 0
     });
-    const [selecting, setSelecting] = useState("");
+
+    const [undoStack, setUndoStack] = useState([]);
+    const [redoAction, setRedo] = useState({});
 
     useEffect(() => {
         const beforeReload = (e) => {
@@ -42,6 +44,94 @@ export default function Design({ params }) {
         }
     }, []);
 
+    const pushUndo = (action) => {
+        let newUndo = [...undoStack, action];
+        setRedo({});
+        setUndoStack(newUndo);
+    }
+
+    const undo = (e) => {
+        if(undoStack.length == 0) {
+            return;
+        }
+        console.log(undoStack)
+        const lastAction = undoStack[undoStack.length - 1];
+        setUndoStack(undoStack.slice(0, -1));
+        const id = lastAction.id;
+        let nextDesign = null;
+        setRedo(lastAction);
+        switch(lastAction.action) {
+            case "createElement":
+                setSelecting("");
+                const {[id]: tmp, ...nextelements} = design.elements;
+                console.log(nextelements)
+                updateDesign({...design, ["elements"]: nextelements});
+                break;
+            case "moveElement":
+                const prev = lastAction.from;
+                nextDesign = {...design};
+                nextDesign.elements[id].props.bounds.x.value = prev.x;
+                nextDesign.elements[id].props.bounds.y.value = prev.y;
+                updateDesign(nextDesign);
+                break;
+            case "deleteElement":
+                const elem = lastAction.data;
+                nextDesign = {...design};
+                nextDesign.elements[id] = elem;
+                updateDesign(nextDesign);
+                break;
+            case "changeSize":
+                const prev1 = lastAction.prev;
+                nextDesign = {...design};
+                nextDesign.elements[id].props.bounds.x.value = prev1.x;
+                nextDesign.elements[id].props.bounds.w.value = prev1.w;
+                nextDesign.elements[id].props.bounds.h.value = prev1.h;
+                nextDesign.elements[id].props.bounds.y.value = prev1.y;
+                updateDesign(nextDesign);
+                break;
+        }
+    }
+
+    const redo = (e) => {
+        if(Object.keys(redoAction).length == 0) {
+            return;
+        }
+        setRedo({});
+        pushUndo(redoAction);
+        const id = redoAction.id;
+        let nextDesign = null;
+        switch(redoAction.action) {
+            case "createElement":
+                nextDesign = {...design};
+                nextDesign.elements[id] = redoAction.value;
+                updateDesign(nextDesign);
+                break;
+            case "moveElement":
+                const next = redoAction.to;
+                nextDesign = {...design};
+                nextDesign.elements[id].props.bounds.x.value = next.x;
+                nextDesign.elements[id].props.bounds.y.value = next.y;
+                updateDesign(nextDesign);
+                break;
+            case "deleteElement":
+                const {[id]: tmp, ...other} = design.elements;
+                setSelecting("");
+                updateDesign({
+                    ...design,
+                    ["elements"]: other
+                })
+                break;
+            case "changeSize":
+                const next1 = redoAction.next;
+                nextDesign = {...design};
+                nextDesign.elements[id].props.bounds.x.value = next1.x;
+                nextDesign.elements[id].props.bounds.w.value = next1.w;
+                nextDesign.elements[id].props.bounds.h.value = next1.h;
+                nextDesign.elements[id].props.bounds.y.value = next1.y;
+                updateDesign(nextDesign);
+                break;
+    }
+    }
 
     const updateDesign = (newDesign) => {
         setDesign(newDesign);
@@ -51,7 +141,8 @@ export default function Design({ params }) {
         let newProject = { ...project };
         newProject.pages[params.page].design = design;
         updateProject(newProject);
-
+        setUndoStack([]);
+        setRedo({});
         const res = await fetch(`/api/saveProjects/${params.pid}/pages/${params.page}/design`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -62,26 +153,33 @@ export default function Design({ params }) {
     return (
         <div>
             <div className="menu-bar">
-                <button onClick={() => {setIsOpen(true)}}>top</button>
-                <button onClick={saveDesign}>save</button>
+                {undoStack.length != 0 ? <button onClick={() => {setIsOpen(true)}}>top</button> : <Link href={`/projects/${params.pid}/${params.page}`}>
+                    <button>top</button>
+                </Link>}
+                {undoStack.length != 0 ? <button onClick={saveDesign}>save</button> : <button disabled>save</button>}
+                {undoStack.length != 0 ? <button onClick={undo}>undo</button> : <button disabled>undo</button>}
+                {Object.keys(redoAction).length != 0 ? <button onClick={redo}>redo</button> : <button disabled>redo</button>}
             </div>
-            <DesignContext.Provider value={{ design, updateDesign }}>
-                <ElementSelectingContext.Provider value={{ selecting, setSelecting }}>
-                    <ElementDraggingContext.Provider value={{ dragging, setDragging }}>
-                        <div className="row" style={{ height: "100vh" }}>
-                            <div className="col-2" style={{ border: "1px solid black", padding: "10px" }}>
-                                <ElementsList pid={params.pid} />
+
+            <UndoContext.Provider value={{undoStack, pushUndo}}>
+                <DesignContext.Provider value={{ design, updateDesign }}>
+                    <ElementSelectingContext.Provider value={{ selecting, setSelecting }}>
+                        <ElementDraggingContext.Provider value={{ dragging, setDragging }}>
+                            <div className="row" style={{ height: "100vh" }}>
+                                <div className="col-2" style={{ border: "1px solid black", padding: "10px" }}>
+                                    <ElementsList pid={params.pid} />
+                                </div>
+                                <div className="col-7" style={{ border: "1px solid black", padding: "10px" }}>
+                                    <ElementsDropArea pid={params.pid} />
+                                </div>
+                                <div className="col-3" style={{ border: "1px solid black", padding: "10px" }}>
+                                    <ElementPropertyArea pid={params.pid} page={params.page} />
+                                </div>
                             </div>
-                            <div className="col-7" style={{ border: "1px solid black", padding: "10px" }}>
-                                <ElementsDropArea pid={params.pid} />
-                            </div>
-                            <div className="col-3" style={{ border: "1px solid black", padding: "10px" }}>
-                                <ElementPropertyArea pid={params.pid} page={params.page} />
-                            </div>
-                        </div>
-                    </ElementDraggingContext.Provider>
-                </ElementSelectingContext.Provider>
-            </DesignContext.Provider>
+                        </ElementDraggingContext.Provider>
+                    </ElementSelectingContext.Provider>
+                </DesignContext.Provider>
+            </UndoContext.Provider>
 
             <Popup isOpen={isOpen}>
                 <div>
