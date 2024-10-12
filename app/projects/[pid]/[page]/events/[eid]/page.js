@@ -3,9 +3,6 @@ import EventDropArea from "@/components/event/eventDropArea";
 import EventList from "@/components/event/eventList";
 import EventPropertyArea from "@/components/event/eventPropertyArea";
 import Popup from "@/components/popup";
-import EventContext from "@/contexts/event/eventContext";
-import EventDraggingContext from "@/contexts/event/eventDraggingContext";
-import EventSelectingContext from "@/contexts/event/eventSelectingContext";
 import ProjectContext from "@/contexts/project/projectContext";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react";
@@ -58,24 +55,20 @@ export default function Event({ params }) {
                 <button onClick={() => {setIsOpen(true); setNextPage(`/projects/${params.pid}/${params.page}/events`)}}>events</button>
                 <button onClick={saveEvent}>save</button>
             </div>
-            <EventContext.Provider value={{ event, updateEvent }}>
-                <EventDraggingContext.Provider value={{ dragging, setDragging }}>
-                    <EventSelectingContext.Provider value={{ selecting, setSelecting }}>
-                        <div className="row" style={{ height: "100vh" }}>
-                            <div className="col-2" style={{ border: "1px solid black", padding: "10px" }}>
-                                <EventList eid={params.eid} />
-                            </div>
-                            <div className="col-7" style={{ border: "1px solid black", padding: "10px" }}>
-                                <EventDropArea eid={params.eid} />
-                            </div>
-                            <div className="col-3" style={{ border: "1px solid black", padding: "10px" }}>
-                                <EventPropertyArea eid={params.eid} page={params.page} />
-                            </div>
-                        </div>
-                    </EventSelectingContext.Provider>
-                </EventDraggingContext.Provider>
-            </EventContext.Provider>
-
+            <div className="row" style={{ height: "100vh" }}>
+                <div className="col-2" style={{ border: "1px solid black", padding: "10px" }}>
+                    <EventList eid={params.eid} setDragging={setDragging}/>
+                </div>
+                <div className="col-7" style={{ border: "1px solid black", padding: "10px" }}>
+                    <EventDropArea eid={params.eid} selecting={selecting} event={event} updateEvent={updateEvent}
+                            dragging={dragging} setDragging={setDragging} setSelecting={setSelecting}/>
+                </div>
+                <div className="col-3" style={{ border: "1px solid black", padding: "10px" }}>
+                    <EventPropertyArea eid={params.eid} page={params.page} event={event} updateEvent={updateEvent} selecting={selecting}
+                        setSelecting={setSelecting}
+                    />
+                </div>
+            </div>
             <Popup isOpen={isOpen}>
                 <div>
                     <h4>保存前にページを離れると変更が失われます。</h4>

@@ -1,20 +1,16 @@
 "use client"
 
-import DesignContext from "@/contexts/design/designContext";
-import ElementDraggingContext from "@/contexts/design/elementDraggingContext";
-import ElementSelectingContext from "@/contexts/design/elementSelectingContext";
-import UndoContext from "@/contexts/undoContext";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-export default function ElementsList({ pid }) {
+export default function ElementsList({ setDragging }) {
     return (
         <div style={{ display: "flex", "justifyContent": "center" }}>
             <div className="row" style={{ width: '80%', margin: '0 auto' }}>
-                <ListButtonElement />
+                <ListButtonElement setDragging={setDragging}/>
                 <p></p>
-                <ListTextInputElement />
+                <ListTextInputElement setDragging={setDragging}/>
                 <p></p>
-                <ListLabelElement />
+                <ListLabelElement setDragging={setDragging}/>
             </div>
         </div>
     );
@@ -26,11 +22,8 @@ export const elementsMap = {
     "label": LabelElement
 }
 
-function ElementsBase({ children, id, element }) {
+function ElementsBase({ children, id, element, selecting, setSelecting, design, updateDesign, pushUndo }) {
 
-    const { selecting, setSelecting } = useContext(ElementSelectingContext);
-    const { design, updateDesign } = useContext(DesignContext);
-    const { undoStack, pushUndo } = useContext(UndoContext);
 
     const [isSelecting, setIsSelecting] = useState(false);
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -186,9 +179,23 @@ function ElementsBase({ children, id, element }) {
     )
 }
 
-function ListElementBase({ children, type, general, style, additionalProps, events }) {
+export function AllComponent({type, id, element, selecting, setSelecting, design, updateDesign, pushUndo}) {
+    switch(type){
+        case "button":
+            return(<ButtonElement id={id} element={element} selecting={selecting} setSelecting={setSelecting}
+                design={design} updateDesign={updateDesign} pushUndo={pushUndo}
+            />)
+        case "textInput":
+            return(<TextInputElement id={id} element={element} selecting={selecting} setSelecting={setSelecting}
+                design={design} updateDesign={updateDesign} pushUndo={pushUndo}/>)
+        case "label":
+            return(<LabelElement id={id} element={element} selecting={selecting} setSelecting={setSelecting}
+                design={design} updateDesign={updateDesign} pushUndo={pushUndo}/>)
+    }
+}
 
-    const { dragging, setDragging } = useContext(ElementDraggingContext);
+function ListElementBase({ children, type, general, style, additionalProps, events, setDragging }) {
+
     const [bounds, setBounds] = useState({ x: 0, y: 0, w: 0, h: 0 });
     const ref = useRef(null);
 
@@ -236,16 +243,17 @@ function ListElementBase({ children, type, general, style, additionalProps, even
     )
 }
 
-function ListButtonElement() {
+function ListButtonElement({setDragging}) {
 
     return (
-        <ListElementBase type="button" general={{ text: { type: "string", value: "ボタン" }, className: { type: "string", value: "btn btn-primary" } }} events={{ onClick: "" }}>
+        <ListElementBase type="button" general={{ text: { type: "string", value: "ボタン" }, 
+        className: { type: "string", value: "btn btn-primary" } }} events={{ onClick: "" }} setDragging={setDragging}>
             <button className="btn btn-primary">ボタン</button>
         </ListElementBase>
     )
 }
 
-function ButtonElement({ id, element }) {
+function ButtonElement({ id, element, selecting, setSelecting, design, updateDesign, pushUndo }) {
 
     const style = {
         width: "100%",
@@ -257,7 +265,8 @@ function ButtonElement({ id, element }) {
     });
 
     return (
-        <ElementsBase id={id} element={element}>
+        <ElementsBase id={id} element={element} selecting={selecting} setSelecting={setSelecting}
+                design={design} updateDesign={updateDesign} pushUndo={pushUndo}>
             <button className={element.props.general.className.value} style={style}>
                 {element.props.general.text.value}
             </button>
@@ -265,15 +274,16 @@ function ButtonElement({ id, element }) {
     )
 }
 
-function ListTextInputElement() {
+function ListTextInputElement({setDragging}) {
     return (
-        <ListElementBase type="textInput" general={{ value: { type: "string", value: "入力欄" }, className: { type: "string", value: "form-control border-secondary" } }} events={{ onChange: "" }}>
+        <ListElementBase type="textInput" general={{ value: { type: "string", value: "入力欄" }, 
+        className: { type: "string", value: "form-control border-secondary" } }} events={{ onChange: "" }} setDragging={setDragging}>
             <input type="text" className="form-control border-secondary" value="入力欄" readOnly="readOnly" />
         </ListElementBase>
     )
 }
 
-function TextInputElement({ id, element }) {
+function TextInputElement({ id, element, selecting, setSelecting, design, updateDesign, pushUndo }) {
     const style = {
         width: "100%",
         height: "100%",
@@ -284,22 +294,25 @@ function TextInputElement({ id, element }) {
     });
 
     return (
-        <ElementsBase id={id} element={element}>
-            <input type="text" className={element.props.general.className.value} style={style} value={element.props.general.value.value} readOnly="readOnly" />
+        <ElementsBase id={id} element={element} selecting={selecting} setSelecting={setSelecting}
+                design={design} updateDesign={updateDesign} pushUndo={pushUndo}>
+            <input type="text" className={element.props.general.className.value} style={style} 
+                value={element.props.general.value.value} readOnly="readOnly" />
         </ElementsBase>
     )
 
 }
 
-function ListLabelElement() {
+function ListLabelElement({setDragging}) {
     return (
-        <ListElementBase type="label" general={{ text: { type: "string", value: "テキストラベル" }, className: { type: "string", value: "form-label" } }} style={{ border: "1px solid black" }} events={{}}>
+        <ListElementBase type="label" general={{ text: { type: "string", value: "テキストラベル" }, 
+        className: { type: "string", value: "form-label" } }} style={{ border: "1px solid black" }} events={{}} setDragging={setDragging}>
             <label className="form-label" style={{ border: "1px solid black" }}>テキストラベル</label>
         </ListElementBase>
     )
 }
 
-function LabelElement({ id, element }) {
+function LabelElement({ id, element, selecting, setSelecting, design, updateDesign, pushUndo }) {
     const style = {
         width: "100%",
         height: "100%",
@@ -310,7 +323,8 @@ function LabelElement({ id, element }) {
     });
 
     return (
-        <ElementsBase id={id} element={element}>
+        <ElementsBase id={id} element={element} selecting={selecting} setSelecting={setSelecting}
+                design={design} updateDesign={updateDesign} pushUndo={pushUndo}>
             <label className={element.props.general.className.value} style={style}>
                 {element.props.general.text.value}
             </label>

@@ -4,11 +4,7 @@ import ElementPropertyArea from "@/components/design/elementPropertyArea";
 import ElementsDropArea from "@/components/design/elementsDropArea";
 import ElementsList from "@/components/design/elementsList";
 import Popup from "@/components/popup";
-import DesignContext from "@/contexts/design/designContext";
-import ElementDraggingContext from "@/contexts/design/elementDraggingContext";
-import ElementSelectingContext from "@/contexts/design/elementSelectingContext";
 import ProjectContext from "@/contexts/project/projectContext"
-import UndoContext from "@/contexts/undoContext";
 import Link from "next/link";
 import { useContext, useEffect, useState } from "react"
 
@@ -161,25 +157,21 @@ export default function Design({ params }) {
                 {Object.keys(redoAction).length != 0 ? <button onClick={redo}>redo</button> : <button disabled>redo</button>}
             </div>
 
-            <UndoContext.Provider value={{undoStack, pushUndo}}>
-                <DesignContext.Provider value={{ design, updateDesign }}>
-                    <ElementSelectingContext.Provider value={{ selecting, setSelecting }}>
-                        <ElementDraggingContext.Provider value={{ dragging, setDragging }}>
-                            <div className="row" style={{ height: "100vh" }}>
-                                <div className="col-2" style={{ border: "1px solid black", padding: "10px" }}>
-                                    <ElementsList pid={params.pid} />
-                                </div>
-                                <div className="col-7" style={{ border: "1px solid black", padding: "10px" }}>
-                                    <ElementsDropArea pid={params.pid} />
-                                </div>
-                                <div className="col-3" style={{ border: "1px solid black", padding: "10px" }}>
-                                    <ElementPropertyArea pid={params.pid} page={params.page} />
-                                </div>
-                            </div>
-                        </ElementDraggingContext.Provider>
-                    </ElementSelectingContext.Provider>
-                </DesignContext.Provider>
-            </UndoContext.Provider>
+            <div className="row" style={{ height: "100vh" }}>
+                <div className="col-2" style={{ border: "1px solid black", padding: "10px" }}>
+                    <ElementsList setDragging={setDragging} />
+                </div>
+                <div className="col-7" style={{ border: "1px solid black", padding: "10px" }}>
+                    <ElementsDropArea dragging={dragging} selecting={selecting} setDragging={setDragging} design={design} 
+                        updateDesign={updateDesign} setSelecting={setSelecting} pushUndo={pushUndo}
+                        />
+                </div>
+                <div className="col-3" style={{ border: "1px solid black", padding: "10px" }}>
+                    <ElementPropertyArea page={params.page} design={design} updateDesign={updateDesign} selecting={selecting} 
+                        setSelecting={setSelecting} pushUndo={pushUndo}
+                    />
+                </div>
+            </div>
 
             <Popup isOpen={isOpen}>
                 <div>

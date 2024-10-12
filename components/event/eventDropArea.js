@@ -1,17 +1,9 @@
 "use client"
 
-import EventContext from "@/contexts/event/eventContext";
-import EventDraggingContext from "@/contexts/event/eventDraggingContext";
-import { useContext, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { actionMap } from "./eventList";
-import EventSelectingContext from "@/contexts/event/eventSelectingContext";
-import EventMouseOverContext from "@/contexts/event/eventMouseOverContext";
 
-export default function EventDropArea() {
-
-    const {event, updateEvent} = useContext(EventContext);
-    const {dragging, setDragging} = useContext(EventDraggingContext);
-    const {selecting, setSelecting} = useContext(EventSelectingContext);
+export default function EventDropArea({event, selecting,  updateEvent, dragging, setDragging, setSelecting}) {
 
     const [bounds, setBounds] = useState({x: 0, y: 0, w: 0, h: 0})
     const [mouseOver, setMouseOver] = useState("");
@@ -65,15 +57,15 @@ export default function EventDropArea() {
 
     return (
         <div style={areaStyle} onDrop={dropEvent} onDragOver={(e) => {e.preventDefault()}} ref={ref} onClick={() => {setSelecting("")}}>
-            <EventMouseOverContext.Provider value={{mouseOver, setMouseOver}}>
                 {Object.entries(event.actions).map(([aid, action]) => {
                     const Component = actionMap[action.type];
                     return (
                         <span style={{position: "absolute", left: action.bounds.x + "px", top: action.bounds.y + "px"}} key={aid}>
-                            <Component action={action} id={aid}/>
+                            <Component action={action} id={aid} selecting={selecting} setSelecting={setSelecting}
+                                event={event} updateEvent={updateEvent} mouseOver={mouseOver} setMouseOver={setMouseOver}
+                            />
                         </span>)
                 })}
-            </EventMouseOverContext.Provider>
         </div>
     )
 }
