@@ -1,19 +1,15 @@
-import EventDraggingContext from "@/contexts/event/eventDraggingContext"
-import EventSelectingContext from "@/contexts/event/eventSelectingContext"
-import { useContext, useEffect, useReducer, useRef, useState } from "react"
-
-import EventContext from "@/contexts/event/eventContext"
+"use client"
+import { useEffect, useRef, useState } from "react"
 import Arrow from "./arrow"
-import EventMouseOverContext from "@/contexts/event/eventMouseOverContext"
 
 
-export default function EventList({ params }) {
+export default function EventList({ setDragging}) {
     return (
         <div style={{ display: "flex", "justifyContent": "center" }}>
             <div className="row" style={{ width: '80%', margin: '0 auto' }}>
-                <ListStartAction />
+                <ListStartAction setDragging={setDragging}/>
                 <p></p>
-                <ListGetAction />
+                <ListGetAction setDragging={setDragging}/>
             </div>
         </div>
     )
@@ -24,14 +20,10 @@ export const actionMap = {
     "GET": GetAction,
 }
 
-function ActionBase({ children, id, action, color }) {
+function ActionBase({ children, id, action, color, selecting, setSelecting, event, updateEvent, mouseOver, setMouseOver }) {
 
-    const { selecting, setSelecting } = useContext(EventSelectingContext);
-    const {event, updateEvent} = useContext(EventContext);
-    const {mouseOver, setMouseOver} = useContext(EventMouseOverContext);
-
-    const [mousePos, setMousePos] = useState({x: 0, y: 0});
-    const [arrowEndPos, setArrowEndPos] = useState({x: 0, y: 0});
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [arrowEndPos, setArrowEndPos] = useState({ x: 0, y: 0 });
 
     useEffect(() => {
         replaceArrow(event);
@@ -43,33 +35,33 @@ function ActionBase({ children, id, action, color }) {
     }
 
     const moveStart = (e) => {
-        setMousePos({x: e.pageX, y: e.pageY});
+        setMousePos({ x: e.pageX, y: e.pageY });
     }
 
     const moveEnd = (e) => {
         let dx = e.pageX - mousePos.x;
         let dy = e.pageY - mousePos.y;
-        if(event.actions[id].bounds.x + dx < 0 || event.actions[id].bounds.y + dy < 0) {
+        if (event.actions[id].bounds.x + dx < 0 || event.actions[id].bounds.y + dy < 0) {
             return
         }
-        let newEvent = {...event};
+        let newEvent = { ...event };
         newEvent.actions[id].bounds.x += dx;
         newEvent.actions[id].bounds.y += dy;
         updateEvent(newEvent);
     }
 
     const arrowStart = (e) => {
-        setMousePos({x: e.pageX, y: e.pageY});
+        setMousePos({ x: e.pageX, y: e.pageY });
     }
 
     const arrowDragging = (e) => {
         let dx = e.pageX - mousePos.x;
         let dy = e.pageY - mousePos.y;
-        setArrowEndPos({x: dx, y: dy});
+        setArrowEndPos({ x: dx, y: dy });
     }
 
     const replaceArrow = (event) => {
-        if(event.actions[id].children != ""){
+        if (event.actions[id].children != "") {
             let ix = event.actions[id].bounds.x;
             let iy = event.actions[id].bounds.y;
             let iw = event.actions[id].bounds.w;
@@ -82,21 +74,21 @@ function ActionBase({ children, id, action, color }) {
                 x: (cx + cw / 2) - (ix + iw / 2),
                 y: (cy - iy - ch)
             })
-        }else{
-            setArrowEndPos({x: 0, y: 0})
+        } else {
+            setArrowEndPos({ x: 0, y: 0 })
         }
-        
+
     }
 
     const arrowEnd = (e) => {
-        if(mouseOver != "" && mouseOver != id) {
+        if (mouseOver != "" && mouseOver != id) {
             const parent = id;
             const child = mouseOver;
-            let newEvent = {...event};
+            let newEvent = { ...event };
 
             newEvent.actions[parent].children = child;
             let oldParent = newEvent.actions[child].parents;
-            if(oldParent != "" && oldParent != parent) {
+            if (oldParent != "" && oldParent != parent) {
                 newEvent.actions[oldParent].children = "";
             }
             newEvent.actions[child].parents = parent;
@@ -105,18 +97,18 @@ function ActionBase({ children, id, action, color }) {
             updateEvent(newEvent);
             replaceArrow(newEvent);
         }
-        else{
+        else {
             const parent = id;
             const child = event.actions[parent].children;
-            let newEvent = {...event};
-            if(child != ""){
+            let newEvent = { ...event };
+            if (child != "") {
                 newEvent.actions[parent].children = "";
                 newEvent.actions[child].parents = "";
             }
             updateEvent(newEvent);
             replaceArrow(newEvent);
         }
-        
+
     }
 
     const onMouseEnter = (e) => {
@@ -126,41 +118,41 @@ function ActionBase({ children, id, action, color }) {
 
     const onMouseLeave = (e) => {
         setMouseOver("");
-    } 
+    }
 
     const mouseOverStyle = {
-        true: {border: "solid 2px green"}
+        true: { border: "solid 2px green" }
     }
 
     const selectStyle = {
-        true: {border: "solid 3px black"},
-        false: {border: "solid 1px black"}
+        true: { border: "solid 3px black" },
+        false: { border: "solid 1px black" }
     }
 
     return (
         <div style={selectStyle[selecting == id]}>
-            <div style={{position: "relative", left: (event.actions[id].bounds.w / 2) + "px", top: event.actions[id].bounds.h + "px", width: "0px", height: "0px"}}>
+            <div style={{ position: "relative", left: (event.actions[id].bounds.w / 2) + "px", top: event.actions[id].bounds.h + "px", width: "0px", height: "0px" }}>
                 {selecting == id && (
-                    <div style={{zIndex: "9", width:"14px", height: "14px", borderRadius: "50%", backgroundColor: "blue", position: "absolute", left: "-7px", top: "-7px"
-                    ,}}
-                    onDragStart={arrowStart} onDragEnd={arrowEnd} onDrag={arrowDragging} draggable>
+                    <div style={{
+                        zIndex: "9", width: "14px", height: "14px", borderRadius: "50%", backgroundColor: "blue", position: "absolute", left: "-7px", top: "-7px"
+                        ,
+                    }}
+                        onDragStart={arrowStart} onDragEnd={arrowEnd} onDrag={arrowDragging} draggable>
                     </div>
                 )}
-                <Arrow start={{x: 0, y: 0}} end={{x: arrowEndPos.x, y: arrowEndPos.y}} />
+                <Arrow start={{ x: 0, y: 0 }} end={{ x: arrowEndPos.x, y: arrowEndPos.y }} />
             </div>
             <div onClick={select} onDragStart={moveStart} onDragEnd={moveEnd} onDragLeave={onMouseLeave} onDragOver={onMouseEnter}
-                 onMouseLeave={onMouseLeave} draggable
-                style={{ width: action.bounds.w + "px", height: action.bounds.h + "px", backgroundColor: color, zIndex: "5", ...mouseOverStyle[id==mouseOver]}}
-                >
+                onMouseLeave={onMouseLeave} draggable
+                style={{ width: action.bounds.w + "px", height: action.bounds.h + "px", backgroundColor: color, zIndex: "5", ...mouseOverStyle[id == mouseOver] }}
+            >
                 {children}
             </div>
         </div>
     )
 }
 
-function ListActionBase({ children, type, color, selector }) {
-
-    const { dragging, setDragging } = useContext(EventDraggingContext);
+function ListActionBase({ children, type, color, selector, setDragging }) {
 
     const [bounds, setBounds] = useState({ x: 0, y: 0, w: 0, h: 0 });
     const ref = useRef(null);
@@ -201,7 +193,7 @@ function ListActionBase({ children, type, color, selector }) {
     )
 }
 
-function ListStartAction() {
+function ListStartAction({setDragging}) {
 
     const selector = {
         inTypes: [],
@@ -211,37 +203,39 @@ function ListStartAction() {
     }
 
     return (
-        <ListActionBase type="START" color="yellow" selector={selector}>
+        <ListActionBase type="START" color="yellow" selector={selector} setDragging={setDragging}>
             <h4>START</h4>
         </ListActionBase>
     )
 }
 
-function StartAction({action, id}) {
-    return(
-        <ActionBase action={action} id={id} color="yellow">
+function StartAction({ action, id, selecting, setSelecting, event, updateEvent, mouseOver, setMouseOver }) {
+    return (
+        <ActionBase action={action} id={id} color="yellow" selecting={selecting} setSelecting={setSelecting} event={event} 
+            updateEvent={updateEvent} mouseOver={mouseOver} setMouseOver={setMouseOver}>
             <h4>START</h4>
         </ActionBase>
     )
 }
 
-function ListGetAction() {
+function ListGetAction({setDragging}) {
     const selector = {
         inTypes: ["id", "variable", "constant"],
         outTypes: ["id", "variable"],
-        in: [{type: "id", value: ""}],
-        out: [{type: "id", value: ""}]
+        in: [{ type: "id", value: "" }],
+        out: [{ type: "id", value: "" }]
     }
     return (
-        <ListActionBase type="GET" color="yellow" selector={selector}>
+        <ListActionBase type="GET" color="yellow" selector={selector} setDragging={setDragging}>
             <h4>GET</h4>
         </ListActionBase>
     )
 }
 
-function GetAction({ action, id }) {
+function GetAction({ action, id, selecting, setSelecting, event, updateEvent, mouseOver, setMouseOver }) {
     return (
-        <ActionBase action={action} id={id} color="yellow">
+        <ActionBase action={action} id={id} color="yellow" selecting={selecting} setSelecting={setSelecting} event={event} 
+            updateEvent={updateEvent} mouseOver={mouseOver} setMouseOver={setMouseOver}>
             <h4>GET</h4>
         </ActionBase>
     )

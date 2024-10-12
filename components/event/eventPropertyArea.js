@@ -1,22 +1,16 @@
-import DesignContext from "@/contexts/design/designContext";
-import EventContext from "@/contexts/event/eventContext";
-import EventSelectingContext from "@/contexts/event/eventSelectingContext";
+"use client"
 import ProjectContext from "@/contexts/project/projectContext";
 import { useContext, useEffect, useState } from "react";
 import { Accordion, AccordionBody, AccordionButton, AccordionCollapse, AccordionHeader, AccordionItem, Card, CardBody } from "react-bootstrap";
 
 
-export default function EventPropertyArea({page}) {
-
-    const {selecting, setSelecting} = useContext(EventSelectingContext);
-    const {event, updateEvent} = useContext(EventContext);
+export default function EventPropertyArea({page, event, updateEvent, selecting, setSelecting}) {
 
     const deleteAction = (e) => {
         const parent = event.actions[selecting].parents;
         const child = event.actions[selecting].children;
         let newEvent = {...event};
         const {[selecting]: value, ...otehrs} = newEvent.actions;
-        console.log(otehrs)
         newEvent.actions = {...otehrs};
         if(parent != "") {
             newEvent.actions[parent].children = "";
@@ -37,7 +31,7 @@ export default function EventPropertyArea({page}) {
                             <AccordionHeader>入力{index}</AccordionHeader>
                             <AccordionBody>
                                 <Property aid={selecting} types={event.actions[selecting].selector.inTypes} 
-                                        index={index} ioType="in" type={item.type} value={item.value} page={page}/>
+                                        index={index} ioType="in" type={item.type} value={item.value} page={page} event={event} updateEvent={updateEvent}/>
                             </AccordionBody>
                         </AccordionItem>
                     </div>
@@ -48,7 +42,7 @@ export default function EventPropertyArea({page}) {
                             <AccordionHeader>出力{index}</AccordionHeader>
                             <AccordionBody>
                                 <Property aid={selecting} types={event.actions[selecting].selector.outTypes} 
-                                        index={index} type={item.type} value={item.value} ioType="out" page={page}/>
+                                        index={index} type={item.type} value={item.value} ioType="out" page={page} event={event} updateEvent={updateEvent}/>
                             </AccordionBody>
                         </AccordionItem>
                     </div>
@@ -63,50 +57,16 @@ export default function EventPropertyArea({page}) {
     )
 }
 
-function Property({aid, types, index, type, value, ioType, page}) {
+function Property({aid, types, index, type, value, ioType, page, event, updateEvent}) {
 
     const {project, updateProject} = useContext(ProjectContext);
-    const {event, updateEvent} = useContext(EventContext);
 
     const design = project.pages[page].design;
 
     const [typeSelect, setTypeSelect] = useState(type);
-    const [newValue, setNewValue] = useState(() => {
-        if(type != "id") {
-            return value;
-        }else{
-            let values = value.split(",");
-            if(values.length != 3) {
-                return ""
-            } else {
-                return values[0];
-            }
-        }
-    });
-    const [designPropGroup, setDesignPropGroup] = useState(() => {
-        if(type != "id") {
-            return value;
-        }else{
-            let values = value.split(",");
-            if(values.length != 3) {
-                return ""
-            } else {
-                return values[1];
-            }
-        }
-    });
-    const [designPropName, setDesignPropName] = useState(() => {
-        if(type != "id") {
-            return value;
-        }else{
-            let values = value.split(",");
-            if(values.length != 3) {
-                return ""
-            } else {
-                return values[2];
-            }
-        }
-    });
+    const [newValue, setNewValue] = useState("");
+    const [designPropGroup, setDesignPropGroup] = useState("");
+    const [designPropName, setDesignPropName] = useState("");
 
 
     useEffect(() => {
@@ -118,7 +78,11 @@ function Property({aid, types, index, type, value, ioType, page}) {
                 if(values.length != 3) {
                     return ""
                 } else {
-                    return values[0];
+                    if(values[0] in design.elements){
+                        return values[0];
+                    } else {
+                        return "";
+                    }
                 }
             }
         });
