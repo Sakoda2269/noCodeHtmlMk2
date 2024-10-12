@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react"
 import { actionMap } from "./eventList";
-import EventMouseOverContext from "@/contexts/event/eventMouseOverContext";
 
 export default function EventDropArea({event, selecting,  updateEvent, dragging, setDragging, setSelecting}) {
 
@@ -58,7 +57,6 @@ export default function EventDropArea({event, selecting,  updateEvent, dragging,
 
     return (
         <div style={areaStyle} onDrop={dropEvent} onDragOver={(e) => {e.preventDefault()}} ref={ref} onClick={() => {setSelecting("")}}>
-            <EventMouseOverContext.Provider value={{mouseOver, setMouseOver}}>
                 {Object.entries(event.actions).map(([aid, action]) => {
                     const Component = actionMap[action.type];
                     return (
@@ -68,7 +66,6 @@ export default function EventDropArea({event, selecting,  updateEvent, dragging,
                             />
                         </span>)
                 })}
-            </EventMouseOverContext.Provider>
         </div>
     )
 }
