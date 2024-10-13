@@ -1,0 +1,31 @@
+.sideContainer {
+    display: flex;
+    height: 100vh;
+    transition: all 0.3s ease;
+}
+
+.panel {
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.left {
+    width: 10%;
+    background-color: lightgray;
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.center {
+    flex: 1;
+}
+
+.leftClosed {
+    width: 0%;
+    padding: 0px;
+}
+
+.sideIcons {
+    width: 50px;
+    padding: 5px;
+}
