@@ -1,12 +1,15 @@
 "use client"
+import Popup from "@/components/popup";
 import ProjectContext from "@/contexts/project/projectContext";
 import Link from "next/link";
-import { useContext } from "react"
+import { useContext, useState } from "react"
 
 
 export default function Project({params}){
 
     const {project, updateProject} = useContext(ProjectContext);
+
+    const [isOpen, setIsOpen] = useState(false);
 
     const exportModel = (e) => {
         let widgets = {};
@@ -41,6 +44,17 @@ export default function Project({params}){
         URL.revokeObjectURL(downloadLink.href);
     }
 
+    const deletePage = async () => {
+        const {[params.page]: rect, ...other} = project.pages;
+        await fetch(`/api/deleteProjects/${params.pid}/pages/${params.page}`, {method: "DELETE"});
+        updateProject({
+            ...project,
+            ["pages"]:{
+                ...other
+            }
+        });
+    }
+
     return(
         <div>
             <div className="menu-bar">
@@ -62,9 +76,28 @@ export default function Project({params}){
                     <h3>ページ設定</h3>
                 </div>
                 <div>
-                    <button className="btn btn-primary" style={{marginTop: "20px"}} onClick={exportModel}>エクスポートする</button>
+                    <button className="btn btn-primary" style={{marginTop: "20px", marginBottom: "20px"}} onClick={exportModel}>エクスポートする</button>
+                </div>
+                <div>
+                    <button className="btn btn-danger" onClick={() => {setIsOpen(true)}}>ページを削除する</button>
                 </div>
             </div>
+
+            <Popup isOpen={isOpen}>
+                <div>
+                    <h4>本当に削除してもよろしいですか？</h4>
+                    <p></p>
+                    <p></p>
+                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                        <button className="btn btn-secondary" style={{marginRight: "30px"}}
+                            onClick={() => setIsOpen(false)}>キャンセル</button>
+                        <Link href={`/projects/${params.pid}`}>
+                            <button className="btn btn-danger" onClick={deletePage}>削除する</button>
+                        </Link>
+                    </div>
+                </div>
+            </Popup>
+
         </div>
     )
 }
