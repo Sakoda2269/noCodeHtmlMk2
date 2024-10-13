@@ -10,7 +10,7 @@ export default function Pages({ params }) {
 
     const { project, updateProject } = useContext(ProjectContext);
 
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(0);
     const [title, setTitle] = useState("");
     const [tabKey, setTabKey] = useState("pages");
 
@@ -38,12 +38,17 @@ export default function Pages({ params }) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(tmp)
         });
-        setIsOpen(false);
+        setIsOpen(0);
     }
 
     const cancel = (e) => {
         setTitle("");
-        setIsOpen(false);
+        setIsOpen(0);
+    }
+
+    const deleteProject = (e) => {
+        setIsOpen(0);
+        fetch(`/api/deleteProjects/${params.pid}`, {method: "DELETE"});
     }
 
     return (
@@ -62,7 +67,7 @@ export default function Pages({ params }) {
                     <Tabs id="project-tab" activeKey={tabKey} onSelect={(k) => { setTabKey(k) }}>
                         <Tab eventKey="pages" title="pages">
                             <div className="grid">
-                                <button className="btn btn-secondary" onClick={() => { setIsOpen(true) }}>
+                                <button className="btn btn-secondary" onClick={() => { setIsOpen(1) }}>
                                     <p></p>
                                     ページを作成
                                     <p></p>
@@ -81,11 +86,13 @@ export default function Pages({ params }) {
                             </div>
                         </Tab>
                         <Tab eventKey="setting" title="project setting">
-
+                            <div className="container">
+                                <button className="btn btn-danger" style={{margin: "20px"}} onClick={() => {setIsOpen(2)}}>プロジェクトを削除</button>
+                            </div>
                         </Tab>
                     </Tabs>
                 </div>
-                <Popup isOpen={isOpen}>
+                <Popup isOpen={isOpen == 1}>
                     <div>
                         <label className="form-label">ページのタイトル</label>
                         <input type="text" onChange={onTitleChange} className="form-control border-secondary" />
@@ -99,6 +106,21 @@ export default function Pages({ params }) {
                         ) : (
                             <button className="btn btn-primary" style={{ marginLeft: "10px" }} disabled>決定</button>
                         )}
+                    </div>
+                </Popup>
+
+                <Popup isOpen={isOpen == 2}>
+                    <div>
+                        <h4>本当に削除してもよろしいですか？</h4>
+                        <p></p>
+                        <p></p>
+                        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                            <button className="btn btn-secondary" style={{marginRight: "30px"}}
+                                onClick={() => setIsOpen(0)}>キャンセル</button>
+                                <Link href="/projects">
+                                    <button className="btn btn-danger" onClick={deleteProject}>削除する</button>
+                                </Link>
+                        </div>
                     </div>
                 </Popup>
 

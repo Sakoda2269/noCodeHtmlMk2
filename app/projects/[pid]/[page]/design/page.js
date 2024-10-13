@@ -3,6 +3,7 @@
 import ElementPropertyArea from "@/components/design/elementPropertyArea";
 import ElementsDropArea from "@/components/design/elementsDropArea";
 import ElementsList from "@/components/design/elementsList";
+import Sidebar from "@/components/sidebar.js";
 import Popup from "@/components/popup";
 import ProjectContext from "@/contexts/project/projectContext"
 import Link from "next/link";
@@ -157,21 +158,22 @@ export default function Design({ params }) {
                 {Object.keys(redoAction).length != 0 ? <button onClick={redo}>redo</button> : <button disabled>redo</button>}
             </div>
 
-            <div className="row" style={{ height: "100vh" }}>
-                <div className="col-2" style={{ border: "1px solid black", padding: "10px" }}>
-                    <ElementsList setDragging={setDragging} />
-                </div>
-                <div className="col-7" style={{ border: "1px solid black", padding: "10px" }}>
+            <Sidebar 
+                leftIcons={["all"]}
+                left={[
+                        (<ElementsList setDragging={setDragging} />),
+                    ]}
+                center={(
                     <ElementsDropArea dragging={dragging} selecting={selecting} setDragging={setDragging} design={design} 
                         updateDesign={updateDesign} setSelecting={setSelecting} pushUndo={pushUndo}
                         />
-                </div>
-                <div className="col-3" style={{ border: "1px solid black", padding: "10px" }}>
+                )}
+                right={(
                     <ElementPropertyArea page={params.page} design={design} updateDesign={updateDesign} selecting={selecting} 
-                        setSelecting={setSelecting} pushUndo={pushUndo}
+                    setSelecting={setSelecting} pushUndo={pushUndo}
                     />
-                </div>
-            </div>
+                )}
+            />
 
             <Popup isOpen={isOpen}>
                 <div>

@@ -5,16 +5,7 @@ import { AllComponent } from "./elementsList";
 
 export default function ElementsDropArea({ dragging, setDragging, selecting, design, updateDesign, setSelecting, pushUndo }) {
 
-    const [pos, setPos] = useState({ x: 0, y: 0 });
     const ref = useRef(null);
-
-    useEffect(() => {
-        if (ref.current) {
-            const rect = ref.current.getBoundingClientRect();
-            setPos({ x: rect.left, y: rect.top });
-        }
-        setDragging({})
-    }, [])
 
     const areaStyle = {
         width: '100%',
@@ -27,12 +18,16 @@ export default function ElementsDropArea({ dragging, setDragging, selecting, des
     const dropElements = (e) => {
         e.stopPropagation();
         e.preventDefault();
+        if(!ref.current) {
+            return;
+        }
         if (Object.keys(dragging).length !== 0) {
+            const rect = ref.current.getBoundingClientRect();
             const id = dragging.id;
             const offsetX = dragging.mouseX;
             const offsetY = dragging.mouseY;
-            const x = e.pageX - offsetX - pos.x;
-            const y = e.pageY - offsetY - pos.y;
+            const x = e.pageX - offsetX - rect.left;
+            const y = e.pageY - offsetY - rect.top;
             let props = dragging.props;
             props.bounds.x = { type: "number", value: x };
             props.bounds.y = { type: "number", value: y };

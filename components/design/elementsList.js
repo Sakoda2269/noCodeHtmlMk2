@@ -5,11 +5,9 @@ import { useEffect, useRef, useState } from "react";
 export default function ElementsList({ setDragging }) {
     return (
         <div style={{ display: "flex", "justifyContent": "center" }}>
-            <div className="row" style={{ width: '80%', margin: '0 auto' }}>
+            <div className="row" style={{ width: '100%'}}>
                 <ListButtonElement setDragging={setDragging}/>
-                <p></p>
                 <ListTextInputElement setDragging={setDragging}/>
-                <p></p>
                 <ListLabelElement setDragging={setDragging}/>
             </div>
         </div>
@@ -194,30 +192,31 @@ export function AllComponent({type, id, element, selecting, setSelecting, design
     }
 }
 
-function ListElementBase({ children, type, general, style, additionalProps, events, setDragging }) {
+function ListElementBase({ type, general, style, additionalProps, events, setDragging }) {
 
-    const [bounds, setBounds] = useState({ x: 0, y: 0, w: 0, h: 0 });
     const ref = useRef(null);
 
     useEffect(() => {
-        if (ref.current) {
-            const rect = ref.current.getBoundingClientRect();
-            setBounds({
-                x: rect.left,
-                y: rect.top,
-                w: rect.width,
-                h: rect.height
-            });
-        }
     }, [])
 
     const onDragStart = (e) => {
+        if(!ref.current){
+            return
+        }
+        const rect = ref.current.getBoundingClientRect();
+        const bounds = {
+            x: rect.left,
+            y: rect.top,
+            w: rect.width,
+            h: rect.height
+        }
+        console.log(bounds)
         const props = {
             bounds: {
                 x: { type: "number", value: 0 },
                 y: { type: "number", value: 0 },
-                w: { type: "number", value: bounds.w },
-                h: { type: "number", value: bounds.h }
+                w: { type: "number", value: 150 },
+                h: { type: "number", value: 40 }
             },
             style: style ? style : {},
             general: general ? general : {},
@@ -236,9 +235,12 @@ function ListElementBase({ children, type, general, style, additionalProps, even
         });
     }
 
+    const text = general.text ? general.text.value : general.value.value;
+
     return (
-        <div draggable="true" onDragStart={onDragStart} ref={ref}>
-            {children}
+        <div draggable="true" onDragStart={onDragStart} ref={ref} style={{width: "100%", height: "30px", border: "1px solid black",
+            marginBottom: "10px", overflow: "hidden"}}>
+            {text}
         </div>
     )
 }
@@ -247,9 +249,7 @@ function ListButtonElement({setDragging}) {
 
     return (
         <ListElementBase type="button" general={{ text: { type: "string", value: "ボタン" }, 
-        className: { type: "string", value: "btn btn-primary" } }} events={{ onClick: "" }} setDragging={setDragging}>
-            <button className="btn btn-primary">ボタン</button>
-        </ListElementBase>
+            className: { type: "string", value: "btn btn-primary" } }} events={{ onClick: "" }} setDragging={setDragging} />
     )
 }
 
@@ -277,9 +277,7 @@ function ButtonElement({ id, element, selecting, setSelecting, design, updateDes
 function ListTextInputElement({setDragging}) {
     return (
         <ListElementBase type="textInput" general={{ value: { type: "string", value: "入力欄" }, 
-        className: { type: "string", value: "form-control border-secondary" } }} events={{ onChange: "" }} setDragging={setDragging}>
-            <input type="text" className="form-control border-secondary" value="入力欄" readOnly="readOnly" />
-        </ListElementBase>
+        className: { type: "string", value: "form-control border-secondary" } }} events={{ onChange: "" }} setDragging={setDragging} />
     )
 }
 
@@ -306,9 +304,7 @@ function TextInputElement({ id, element, selecting, setSelecting, design, update
 function ListLabelElement({setDragging}) {
     return (
         <ListElementBase type="label" general={{ text: { type: "string", value: "テキストラベル" }, 
-        className: { type: "string", value: "form-label" } }} style={{ border: "1px solid black" }} events={{}} setDragging={setDragging}>
-            <label className="form-label" style={{ border: "1px solid black" }}>テキストラベル</label>
-        </ListElementBase>
+        className: { type: "string", value: "form-label" } }} style={{ border: "1px solid black" }} events={{}} setDragging={setDragging} />
     )
 }
 

@@ -11,7 +11,7 @@ export default function projectLayout({ children, params }) {
     useEffect(() => {
         const get = async () => {
             try {
-                const res = await fetch(`/api/getData?pid=${params.pid}`, { method: "GET" });
+                const res = await fetch(`/api/getProjects/${params.pid}`, { method: "GET" });
                 const data = await res.json();
                 if (data) {
                     setProject(data);
